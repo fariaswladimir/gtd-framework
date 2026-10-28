@@ -1,0 +1,353 @@
+<title>GTD × Diário do Doutorado</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: documento de planejamento em coluna de até 960px; seções numeradas na ordem de leitura; uma demonstração interativa de "lentes" no meio; tabelas roláveis no próprio contêiner. */
+:root{
+  --bg:#EEF1F3; --surface:#FFFFFF; --surface2:#F4F6F8; --ink:#15212B; --muted:#5B6B78; --line:#D3DAE0;
+  --accent:#0B6E75; --accent-soft:#D8EDEF; --gtd:#2B5FC4; --gtd-soft:#DEE7F8;
+  --ok:#23764A; --ok-soft:#DDF0E4; --warn:#8F5A00; --warn-soft:#FBEBCB; --bad:#B3342E; --bad-soft:#F8DEDC;
+  --f-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --f-body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,Consolas,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E151B; --surface:#16202A; --surface2:#1C2833; --ink:#E4EBF1; --muted:#90A2B1; --line:#2B3C4C;
+  --accent:#56C3CC; --accent-soft:#12383D; --gtd:#7FA8F5; --gtd-soft:#1B2B4A;
+  --ok:#5CC88C; --ok-soft:#173A29; --warn:#E3B04B; --warn-soft:#3C2E10; --bad:#F0827C; --bad-soft:#43201E; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E151B; --surface:#16202A; --surface2:#1C2833; --ink:#E4EBF1; --muted:#90A2B1; --line:#2B3C4C;
+  --accent:#56C3CC; --accent-soft:#12383D; --gtd:#7FA8F5; --gtd-soft:#1B2B4A;
+  --ok:#5CC88C; --ok-soft:#173A29; --warn:#E3B04B; --warn-soft:#3C2E10; --bad:#F0827C; --bad-soft:#43201E; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.6 var(--f-body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 72px}
+.wrap{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:40px}
+h1,h2,h3,p,ul,ol{margin:0}
+h1{font:700 clamp(28px,5vw,40px)/1.08 var(--f-display);letter-spacing:-.02em;text-wrap:balance}
+h2{font:700 22px/1.2 var(--f-display);letter-spacing:-.01em;text-wrap:balance}
+h3{font:600 15.5px/1.35 var(--f-body)}
+.eyebrow{font:600 11px/1.2 var(--f-mono);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.lead{font-size:17px;max-width:66ch;color:var(--ink)}
+.muted{color:var(--muted)}
+.mono{font-family:var(--f-mono)}
+section{display:flex;flex-direction:column;gap:16px;min-width:0}
+.sec-n{font:600 12px var(--f-mono);color:var(--accent)}
+.prose{max-width:68ch;display:flex;flex-direction:column;gap:10px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;min-width:0;display:flex;flex-direction:column;gap:8px}
+.panel ul{padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.tag{display:inline-block;font:600 10.5px/1 var(--f-mono);text-transform:uppercase;letter-spacing:.06em;padding:4px 8px;border-radius:999px;white-space:nowrap}
+.t-gtd{background:var(--gtd-soft);color:var(--gtd)} .t-dd{background:var(--accent-soft);color:var(--accent)}
+.t-ok{background:var(--ok-soft);color:var(--ok)} .t-warn{background:var(--warn-soft);color:var(--warn)} .t-bad{background:var(--bad-soft);color:var(--bad)}
+.t-muted{background:var(--surface2);color:var(--muted)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14px}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{font:600 11px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--surface2)}
+tr:last-child td{border-bottom:0}
+td code,p code,li code{font:500 12.5px var(--f-mono);background:var(--surface2);padding:1px 5px;border-radius:4px}
+.callout{border-radius:8px;padding:14px 16px;background:var(--warn-soft);font-size:14.5px;max-width:72ch}
+.callout.info{background:var(--accent-soft)}
+
+/* demo de lentes */
+.demo{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.demo-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid var(--line);background:var(--surface2)}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.seg button{font:600 13px var(--f-body);padding:7px 12px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.demo-body{padding:16px;display:flex;flex-direction:column;gap:12px;min-height:300px}
+.lens-note{font-size:13.5px;color:var(--muted);max-width:75ch}
+.lens-note b{color:var(--ink);font-weight:600}
+.li{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
+.li:last-child{border-bottom:0}
+.dot{width:13px;height:13px;border-radius:50%;border:1.5px solid var(--muted);flex:none}
+.s-doing{border-color:var(--accent);background:linear-gradient(90deg,var(--accent) 50%,transparent 50%)}
+.s-done{border-color:var(--ok);background:var(--ok)}
+.s-blocked{border-color:var(--bad);background:repeating-linear-gradient(45deg,var(--bad) 0 2px,transparent 2px 4px)}
+.code{font:500 12px var(--f-mono);color:var(--muted);min-width:44px}
+.done-t{color:var(--muted);text-decoration:line-through}
+.kb{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;overflow-x:auto}
+.kcol{background:var(--surface2);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px;min-width:150px}
+.kcol h4{margin:0;font:600 11px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:flex;justify-content:space-between}
+.kcard{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 9px;font-size:13px}
+.steps{display:flex;flex-direction:column;gap:0}
+.step{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line)}
+.step:last-child{border-bottom:0}
+.snum{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:600 12px var(--f-mono);flex:none;background:var(--surface2);color:var(--muted)}
+.snum.cur{background:var(--accent);color:var(--surface)} .snum.ok{background:var(--ok);color:var(--surface)}
+.tree{font:400 13px/1.9 var(--f-mono);overflow-x:auto;white-space:pre}
+.tree .row{display:flex;align-items:center;gap:8px}
+.tree .lv1{font-weight:600}
+.gate{border:1px solid var(--accent);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;background:var(--accent-soft)}
+.bar{display:flex;height:7px;border-radius:4px;overflow:hidden;background:var(--line);max-width:340px}
+.bar i{display:block;height:100%}
+
+/* plano */
+.phase{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;display:grid;grid-template-columns:64px 1fr;gap:14px;min-width:0}
+.phase .pid{font:700 22px/1 var(--f-display);color:var(--accent)}
+.phase .pbody{display:flex;flex-direction:column;gap:8px;min-width:0}
+.phase ul{padding-left:18px;display:flex;flex-direction:column;gap:3px;font-size:14.5px}
+.meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
+@media (max-width:520px){.phase{grid-template-columns:1fr}}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.node{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:8px 12px;font-size:13.5px}
+.node b{display:block;font:600 11px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.arrow{color:var(--muted);font-family:var(--f-mono)}
+footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header style="display:flex;flex-direction:column;gap:12px">
+  <span class="eyebrow">Plano de melhorias · 17 out 2026</span>
+  <h1>GTD × Diário do Doutorado</h1>
+  <p class="lead">Dois sistemas independentes, ligados por um contrato: quem é dono de cada dado, que mensagens circulam entre eles e em que ordem construir a ligação.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="tag t-gtd">GTD · dono da execução</span><span class="tag t-dd">Diário · dono da pesquisa</span></div>
+</header>
+
+<section id="leitura">
+  <span class="sec-n">1 · Leitura do Diário</span>
+  <h2>O que o Diário do Doutorado já é</h2>
+  <div class="prose">
+    <p>O Diário é um artifact do claude.ai com banco próprio, sincronizado em tempo real. Ele não é uma lista de tarefas. Ele controla a pesquisa por <b>estrutura</b> (EAPs), por <b>aprovação</b> (gates) e por <b>registro</b> (diário, leituras, buscas, artefatos versionados).</p>
+  </div>
+  <div class="grid3">
+    <div class="panel"><h3>Estrutura</h3><ul><li>2 EAPs ativas: Pesquisa bibliográfica (5 fases, marcos M0–M4) e DSR (9 fases, M0–M7). A EAP da MLR existe no código, mas está desligada.</li><li>Status por folha: pendente, em andamento, concluído, bloqueado. O status dos nós pais é calculado a partir das folhas.</li></ul></div>
+    <div class="panel"><h3>Aprovação</h3><ul><li>Gates G0–G5 com critérios em checklist, aprovador, data e pendências.</li><li>Decisão: Go, Iterar, Pivotar ou Parar.</li><li>Mini-gates (pilotos, saturação, revisão cruzada).</li></ul></div>
+    <div class="panel"><h3>Registro</h3><ul><li>Diário tipado: nota, decisão, reunião, bloqueio, aprendizado, ameaça, parecer.</li><li>Encaminhamentos de reunião (<code>ação | responsável | prazo</code>) viram ações com prazo.</li><li>Leituras, buscas com PRISMA e Kappa, artefatos com versão e SHA-256, capítulos da tese.</li></ul></div>
+  </div>
+  <div class="panel"><h3>De onde vêm e para onde vão os dados</h3><p class="muted" style="font-size:14px">O banco do artifact só é visível dentro do claude.ai. O Diário já usa os conectores do claude.ai para gravar cópias no Google Drive e rascunhos no Gmail, e usa o Claude para sugerir atualizações de EAP e gates a partir de cada entrada. Nenhum outro sistema lê esses dados hoje, e isso inclui o GTD.</p></div>
+</section>
+
+<section id="principio">
+  <span class="sec-n">2 · Princípio</span>
+  <h2>Dois sistemas, cada um dono do que é seu</h2>
+  <div class="grid2">
+    <div class="panel"><span class="tag t-gtd" style="align-self:flex-start">GTD</span><h3>Dono da execução</h3><ul><li>Inbox, clarificação, lanes e WIP, tarefas do dia, carry-over e revisões</li><li>Projetos de toda a vida, com o tipo de controle que você escolher</li><li>Não guarda EAP de pesquisa, gates, leituras nem tese</li></ul></div>
+    <div class="panel"><span class="tag t-dd" style="align-self:flex-start">Diário do Doutorado</span><h3>Dono da pesquisa</h3><ul><li>EAPs, gates e decisões, diário tipado, leituras, buscas PRISMA, artefatos e tese</li><li>Continua um artifact do claude.ai, com o mesmo banco e as mesmas telas</li><li>Não guarda tarefas do dia nem projetos fora do doutorado</li></ul></div>
+  </div>
+  <div class="callout info">Nenhum dos dois copia o modelo do outro. Eles trocam apenas <b>mensagens de ligação</b> com formato fixo, cada mensagem com um único dono. O que vale é sempre a versão do sistema dono; o outro guarda só uma referência.</div>
+  <div class="tbl"><table>
+    <thead><tr><th>Ponto de contato</th><th>Hoje</th><th>Com a ligação</th></tr></thead>
+    <tbody>
+      <tr><td>Ação combinada com a orientadora</td><td>Fica só no Diário; não entra no seu dia</td><td>Vira tarefa no GTD; concluída lá, volta como feita no Diário</td></tr>
+      <tr><td>Projetos do doutorado no GTD (RSL, Survey…)</td><td>Etapas copiadas à mão, que desatualizam</td><td>Cada projeto aponta para um nó ou gate do Diário e mostra o status de lá, sem editar</td></tr>
+      <tr><td>Bloqueio registrado no Diário</td><td>Invisível no GTD</td><td>Alerta no hub doutorado</td></tr>
+      <tr><td>Captura sobre o doutorado no GTD</td><td>Fica na inbox do GTD</td><td>Pode ser enviada ao Diário como rascunho de entrada</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="contrato">
+  <span class="sec-n">3 · Contrato de ligação</span>
+  <h2>Mensagens com formato, dono e chave fixos</h2>
+  <div class="prose"><p>Cada mensagem tem um tipo, uma chave estável (<code>dd:acao:&lt;id&gt;</code>), uma versão do contrato e a data de alteração. Reenviar a mesma mensagem não duplica nada. Se as duas pontas mudarem o mesmo dado, vale a versão do dono.</p></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Mensagem</th><th>Sentido</th><th>Dono</th><th>Efeito no destino</th></tr></thead>
+    <tbody>
+      <tr><td><code>acao.upsert</code></td><td><span class="tag t-dd">Diário</span> → <span class="tag t-gtd">GTD</span></td><td>Diário</td><td>Cria ou atualiza um item na Inbox (origem Diário, prazo, projeto ligado), que você clarifica em tarefa. Ações de outros responsáveis vão para Aguardando.</td></tr>
+      <tr><td><code>acao.concluida</code></td><td><span class="tag t-gtd">GTD</span> → <span class="tag t-dd">Diário</span></td><td>GTD (execução)</td><td>Marca a ação como feita no Diário, com a data</td></tr>
+      <tr><td><code>marco.status</code></td><td><span class="tag t-dd">Diário</span> → <span class="tag t-gtd">GTD</span></td><td>Diário</td><td>Atualiza o resumo somente leitura do projeto ligado: progresso, gate em foco, decisão, próximo marco</td></tr>
+      <tr><td><code>bloqueio.aberto</code> / <code>.fechado</code></td><td><span class="tag t-dd">Diário</span> → <span class="tag t-gtd">GTD</span></td><td>Diário</td><td>Abre ou encerra um alerta no hub doutorado</td></tr>
+      <tr><td><code>captura.enviada</code></td><td><span class="tag t-gtd">GTD</span> → <span class="tag t-dd">Diário</span></td><td>Diário (após revisão)</td><td>Rascunho de entrada; só vira registro quando você confirma no Diário</td></tr>
+    </tbody>
+  </table></div>
+  <div class="panel"><h3>Exemplo de mensagem</h3>
+<pre class="mono" style="margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12.5px;line-height:1.55">{ "contrato": "gtd-link/1",
+  "tipo": "acao.upsert",
+  "chave": "dd:acao:7f3a",
+  "alterado_em": "2026-10-17T14:20:00Z",
+  "ligado_a": "dd:eap:bib:4_2_3",
+  "dados": { "texto": "Enviar planilha de Kappa para a orientadora",
+             "responsavel": "eu", "prazo": "2026-10-24" } }</pre></div>
+  <div class="panel"><h3>Mapa de ligações (exemplo inicial)</h3>
+    <p class="muted" style="font-size:14px">Cada ligação é um registro no GTD: projeto do GTD ↔ referência no Diário. Você cria, troca ou desfaz sem mexer em nenhum dos dois sistemas.</p>
+    <div class="tbl" style="margin-top:6px"><table>
+      <thead><tr><th>Projeto no GTD</th><th>Referência no Diário</th><th>Situação</th></tr></thead>
+      <tbody>
+        <tr><td>RSL XAI em MAS</td><td><code>dd:eap:bib:4</code> + <code>dd:gate:G3</code></td><td><span class="tag t-ok">Proposta</span></td></tr>
+        <tr><td>Survey Adoção IA</td><td><code>dd:eap:dsr:2_1_2</code> (a confirmar)</td><td><span class="tag t-warn">Confirmar com você</span></td></tr>
+        <tr><td>Ontologia Perícia Multimídia</td><td><code>dd:eap:dsr:5_2_2</code> (a confirmar)</td><td><span class="tag t-warn">Confirmar com você</span></td></tr>
+        <tr><td>Estágio docência</td><td>Sem ligação</td><td><span class="tag t-muted">Só no GTD</span></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section id="transporte">
+  <span class="sec-n">4 · Como as mensagens viajam</span>
+  <h2>Pelo conector do GTD no claude.ai</h2>
+  <div class="flow" aria-label="Caminho das mensagens">
+    <div class="node"><b>Diário</b>caixa de saída</div><span class="arrow">→</span>
+    <div class="node"><b>Conector GTD</b>ferramenta gtd_link_sync</div><span class="arrow">→</span>
+    <div class="node"><b>GTD</b>aplica e registra no log</div><span class="arrow">→</span>
+    <div class="node"><b>Resposta</b>pendências de volta</div><span class="arrow">→</span>
+    <div class="node"><b>Diário</b>aplica conclusões</div>
+  </div>
+  <div class="prose">
+    <p>O Diário roda dentro do claude.ai e já chama conectores (Drive, Gmail). Com o GTD publicado em HTTPS e adicionado como conector, o Diário ganha um botão <b>Sincronizar com GTD</b>. Esse botão envia a caixa de saída e recebe na mesma chamada as mensagens do GTD que estavam pendentes. O GTD nunca acessa o banco do Diário; ele só responde.</p>
+    <p>Cada sincronização fica num <b>log de ligação</b> nas duas pontas: o que foi enviado, aplicado, recusado e por quê. Se o servidor estiver fora do ar, a caixa de saída guarda tudo para a próxima vez.</p>
+  </div>
+  <div class="callout">Primeiro teste a fazer: confirmar que um artifact consegue chamar um conector personalizado. Se não conseguir, a alternativa é o Claude fazer a ponte numa conversa, lendo o Diário e chamando <code>gtd_link_sync</code>, com o mesmo contrato.</div>
+</section>
+
+<section id="plano">
+  <span class="sec-n">5 · Plano de melhorias</span>
+  <h2>Cinco entregas; os dois sistemas continuam independentes</h2>
+  <div class="phase"><span class="pid">L1</span><div class="pbody"><h3>Contrato de ligação, versão 1</h3>
+    <ul><li>Especificação das 5 mensagens, das chaves, das regras de dono e do tratamento de conflito</li><li>Arquivo <code>docs/contrato-ligacao.md</code> + esquema JSON validado nos testes</li></ul>
+    <div class="meta"><span class="tag t-ok">Concluída</span>Entregue: <code>server/link-contract.mjs</code>, <code>docs/contrato-ligacao.md</code> e o esquema JSON, com testes</div></div></div>
+  <div class="phase"><span class="pid">L2</span><div class="pbody"><h3>Ponta do GTD</h3>
+    <ul><li>Registro de ligações (projeto ↔ referência externa) e log de sincronização</li><li>Rota <code>POST /api/link/sync</code> e ferramenta MCP <code>gtd_link_sync</code>: recebe lote, aplica sem duplicar, devolve pendências</li><li>Projeto ligado mostra o painel "No Diário": progresso, gate em foco e decisão, sem edição</li><li>Tarefas de origem Diário marcadas como tal; concluir gera <code>acao.concluida</code></li></ul>
+    <div class="meta"><span class="tag t-ok">Concluída</span>17 testes da ligação passando (25 no total), incluindo o lote repetido sem duplicar</div></div></div>
+  <div class="phase"><span class="pid">L3</span><div class="pbody"><h3>Ponta do Diário</h3>
+    <ul><li>Caixa de saída que gera as mensagens a partir de ações, gates e bloqueios</li><li>Botão "Sincronizar com GTD", log de ligação e aviso de pendências</li><li>Recebe <code>acao.concluida</code> e <code>captura.enviada</code> (esta como rascunho)</li></ul>
+    <div class="meta"><span class="tag t-muted">Pendente</span>Depende de L1 e L4 · Aceite: uma ação criada numa reunião aparece no Dia do GTD e volta concluída</div></div></div>
+  <div class="phase"><span class="pid">L4</span><div class="pbody"><h3>Publicar o GTD com HTTPS</h3>
+    <ul><li>Túnel para testar e depois contêiner permanente, com o token como única credencial</li><li>Adicionar o GTD como conector personalizado no claude.ai</li></ul>
+    <div class="meta"><span class="tag t-warn">Decisão sua</span>Pré-requisito de L3 · Aceite: <code>gtd_context</code> responde a partir do claude.ai</div></div></div>
+  <div class="phase"><span class="pid">L5</span><div class="pbody"><h3>Troca de tipo de controle no GTD</h3>
+    <ul><li>Itens de projeto num núcleo único; o tipo de controle vira lente: Lista, Etapas, Kanban ou EAP simples</li><li>Seletor no projeto, com prévia do que fica oculto; ida e volta sem perder itens</li><li>Assunto só do GTD: não depende da ligação nem mexe no Diário</li></ul>
+    <div class="meta"><span class="tag t-muted">Pendente</span>Independente · pode ser feita antes, em paralelo ou depois</div></div></div>
+</section>
+
+<section id="decisoes">
+  <span class="sec-n">6 · Decisões que dependem de você</span>
+  <h2>Três escolhas antes de começar</h2>
+  <div class="grid3">
+    <div class="panel"><h3>Mapa de ligações</h3><p style="font-size:14.5px">Confirmar a que nó do Diário o Survey e a Ontologia correspondem, ou se ficam sem ligação.</p></div>
+    <div class="panel"><h3>Publicar o GTD com HTTPS</h3><p style="font-size:14.5px">Necessário para o Diário alcançar o GTD. Opções: um túnel temporário ou um contêiner permanente.</p></div>
+    <div class="panel"><h3>Por onde começar</h3><p style="font-size:14.5px">Recomendação: L1 + L2, que dá para testar com o Claude fazendo a ponte numa conversa. Depois L4 e L3. A L5 entra quando você quiser.</p></div>
+  </div>
+</section>
+
+<section id="artefatos">
+  <span class="sec-n">7 · Artefatos do projeto GTD</span>
+  <h2>O que já existe e onde está</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Artefato</th><th>Local</th><th>Estado</th></tr></thead>
+    <tbody>
+      <tr><td>EAP do GTD</td><td><code>gtd-framework/EAP.md</code></td><td><span class="tag t-ok">Blocos 1–5 concluídos</span></td></tr>
+      <tr><td>Aplicação web + API + MCP</td><td><code>server/</code>, <code>public/</code>, <code>mcp/</code></td><td><span class="tag t-ok">Rodando · 25/25 testes</span></td></tr>
+      <tr><td>Conexão com o Claude Code</td><td><code>~/.claude.json</code> (servidor <code>gtd</code>)</td><td><span class="tag t-ok">Testada</span></td></tr>
+      <tr><td>Guias de integração</td><td><code>integrations/</code> (Gmail, Lovable, fontes)</td><td><span class="tag t-ok">Escritos</span></td></tr>
+      <tr><td>Diário do Doutorado</td><td>artifact no claude.ai</td><td><span class="tag t-ok">Sem alterações</span></td></tr>
+      <tr><td>Contrato de ligação</td><td><code>docs/contrato-ligacao.md</code> + <code>.schema.json</code></td><td><span class="tag t-ok">v1 em uso</span></td></tr>
+      <tr><td>Este plano</td><td><code>docs/plano-integracao-diario.html</code></td><td><span class="tag t-warn">L3 e L4 pendentes</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="logica">
+  <span class="sec-n">8 · Detalhe da L5</span>
+  <h2>Trocar o tipo de controle sem perder nada</h2>
+  <div class="prose">
+    <p>Todo projeto passa a guardar o trabalho de um único jeito: <b>itens de trabalho</b> em árvore, cada um com código, título, status (pendente, em andamento, concluído, bloqueado), ordem, prazo e origem. O tipo de controle deixa de ser um formato de dados e passa a ser uma <b>lente</b>, ou seja, uma forma de ver e operar os mesmos itens.</p>
+    <p>Trocar a lente nunca apaga nada. Uma lente plana mostra as folhas da árvore e deixa a hierarquia guardada. Se você voltar para a EAP, a árvore volta inteira.</p>
+  </div>
+
+  <div class="demo" id="demo">
+    <div class="demo-top">
+      <div><span class="eyebrow">Exemplo · RSL (EAP bibliográfica, fase 4)</span><div style="font-size:13px" class="muted">Status ilustrativos, não são os seus dados reais</div></div>
+      <div class="seg" role="group" aria-label="Tipo de controle">
+        <button id="l-lista" data-lens="lista" aria-pressed="false">Lista</button>
+        <button id="l-etapas" data-lens="etapas" aria-pressed="false">Etapas</button>
+        <button id="l-kanban" data-lens="kanban" aria-pressed="false">Kanban</button>
+        <button id="l-eap" data-lens="eap" aria-pressed="true">EAP</button>
+              </div>
+    </div>
+    <div class="demo-body" id="demoBody"></div>
+  </div>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Lente</th><th>Quando usar</th><th>Mostra</th><th>Guarda sem mostrar</th></tr></thead>
+    <tbody>
+      <tr><td><b>Lista</b></td><td>Até 5 itens, sem ordem rígida</td><td>Folhas com caixa de seleção</td><td>Hierarquia, marcos, gates</td></tr>
+      <tr><td><b>Etapas</b></td><td>Sequência de mais de 5 passos com entregas</td><td>Itens de 1º nível em ordem; a etapa atual é a primeira não concluída</td><td>Detalhe das subtarefas</td></tr>
+      <tr><td><b>Kanban</b></td><td>Fluxo contínuo, sem fim (operação do trabalho)</td><td>Folhas em colunas por status, com limite de WIP</td><td>Hierarquia e ordem</td></tr>
+      <tr><td><b>EAP</b></td><td>Entregáveis hierárquicos com marcos</td><td>Árvore com códigos; o status do pai é calculado das folhas</td><td>Nada</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout info">Regra de sugestão automática: com até 5 itens, o sistema sugere Lista. Com itens em sequência, sugere Etapas. Sem data de fim, sugere Kanban. Com níveis aninhados, sugere EAP. A escolha final é sempre sua, e antes de aplicar a troca o sistema mostra o que vai ficar oculto.</div>
+</section>
+
+<footer>Base: leitura do código do "Diário do Doutorado" (versão baixada em Downloads) e do GTD Framework (commit 7ca3745). Os status da demonstração da seção 8 são ilustrativos.</footer>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  // Exemplo: fase 4 da EAP bibliográfica (RSL). Status ilustrativos.
+  var ITEMS=[
+    {c:'4.1',t:'Protocolo final (PRISMA 2020 + Kitchenham)',k:[{c:'4.1.1',t:'RQs derivadas da lacuna do terciário',s:'done'},{c:'4.1.2',t:'PICOC/PICO adaptado',s:'done'},{c:'4.1.3',t:'Strings refinadas com base na cientometria',s:'done'},{c:'4.1.4',t:'Critérios IC/EC e checklist de qualidade',s:'done'}]},
+    {c:'4.2',t:'Identificação e triagem',k:[{c:'4.2.1',t:'Busca nas bases + literatura cinzenta',s:'done'},{c:'4.2.2',t:'Deduplicação',s:'done'},{c:'4.2.3',t:'Triagem título/resumo (duplo-cego)',s:'doing'},{c:'4.2.4',t:'Leitura completa e resolução de conflitos',s:'todo'},{c:'4.2.5',t:'Fluxograma PRISMA',s:'todo'}]},
+    {c:'4.3',t:'Avaliação de qualidade e risco de viés',s:'blocked'},
+    {c:'4.4',t:'Extração de dados',k:[{c:'4.4.1',t:'Piloto do formulário',s:'todo'},{c:'4.4.2',t:'Extração completa',s:'todo'}]},
+    {c:'4.5',t:'Síntese quantitativa e qualitativa',s:'todo'},
+    {c:'4.6',t:'Redação e submissão',s:'todo'},
+    {c:'4.7',t:'Artigo RSL + pacote de replicação',s:'todo',m:'M3'}
+  ];
+  var GATE={id:'G3',title:'RSL → DSR',crit:12,ok:4,dec:'Sem decisão',pend:'Kappa da leitura completa; extração verificada por 2º revisor'};
+  var LABEL={todo:'Pendente',doing:'Em andamento',done:'Concluído',blocked:'Bloqueado'};
+  var NOTE={
+    lista:'<b>Lista</b> mostra só as folhas, cada uma com sua caixa. A hierarquia (4.1, 4.2…) e o marco M3 continuam guardados.',
+    etapas:'<b>Etapas</b> mostra o 1º nível em ordem. A etapa atual é a primeira não concluída, e o status de cada etapa é calculado das subtarefas.',
+    kanban:'<b>Kanban</b> distribui as folhas por status. Mover um cartão muda o status do item; a árvore se atualiza sozinha.',
+    eap:'<b>EAP</b> mostra tudo: códigos, níveis, o status do pai calculado das folhas e o marco M3.',
+    gates:'<b>EAP + Gates</b> soma à árvore o gate que libera a próxima fase. Sem Go, a fase seguinte (DSR) não pode ser ativada.'
+  };
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function leaves(){var o=[];ITEMS.forEach(function(n){if(n.k)n.k.forEach(function(x){o.push(x);});else o.push(n);});return o;}
+  function derive(n){
+    if(!n.k)return n.s;
+    var s=n.k.map(function(x){return x.s;});
+    if(s.every(function(x){return x==='done';}))return 'done';
+    if(s.indexOf('blocked')>=0)return 'blocked';
+    if(s.some(function(x){return x==='done'||x==='doing';}))return 'doing';
+    return 'todo';
+  }
+  function dot(s){return '<span class="dot s-'+s+'" role="img" aria-label="'+LABEL[s]+'"></span>';}
+  function progress(){
+    var L=leaves(),d=0,g=0,b=0;L.forEach(function(x){if(x.s==='done')d++;else if(x.s==='doing')g++;else if(x.s==='blocked')b++;});
+    var t=L.length;
+    return '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><div class="bar" style="flex:1;min-width:160px" role="img" aria-label="'+d+' de '+t+' concluídos"><i style="width:'+(d/t*100)+'%;background:var(--ok)"></i><i style="width:'+(g/t*100)+'%;background:var(--accent)"></i><i style="width:'+(b/t*100)+'%;background:var(--bad)"></i></div><span class="mono muted" style="font-size:12px">'+d+'/'+t+' folhas concluídas</span></div>';
+  }
+  var R={
+    lista:function(){return leaves().map(function(x){return '<div class="li"><input type="checkbox" '+(x.s==='done'?'checked':'')+' disabled aria-label="'+esc(x.t)+'"><span class="'+(x.s==='done'?'done-t':'')+'">'+esc(x.t)+'</span>'+(x.s==='blocked'?' <span class="tag t-bad">bloqueado</span>':'')+'</div>';}).join('');},
+    etapas:function(){
+      var cur=-1;ITEMS.forEach(function(n,i){if(cur<0&&derive(n)!=='done')cur=i;});
+      return '<div class="steps">'+ITEMS.map(function(n,i){var s=derive(n);var cls=s==='done'?'ok':i===cur?'cur':'';
+        return '<div class="step"><span class="snum '+cls+'">'+(i+1)+'</span><div style="flex:1;min-width:0"><div class="'+(s==='done'?'done-t':'')+'">'+esc(n.t)+'</div><div class="muted" style="font-size:12.5px">'+LABEL[s]+(n.k?' · '+n.k.filter(function(x){return x.s==='done';}).length+'/'+n.k.length+' subtarefas':'')+(i===cur?' · etapa atual':'')+'</div></div></div>';}).join('')+'</div>';
+    },
+    kanban:function(){
+      var cols=[['todo','A fazer'],['doing','Fazendo'],['blocked','Bloqueado'],['done','Feito']];
+      return '<div class="kb">'+cols.map(function(c){var L=leaves().filter(function(x){return x.s===c[0];});
+        return '<div class="kcol"><h4><span>'+c[1]+'</span><span>'+L.length+'</span></h4>'+L.map(function(x){return '<div class="kcard">'+esc(x.t)+'</div>';}).join('')+'</div>';}).join('')+'</div>';
+    },
+    eap:function(){
+      var out=['<div class="row lv1">'+dot('doing')+'<span>4. REVISÃO SISTEMÁTICA DA LITERATURA</span></div>'];
+      ITEMS.forEach(function(n,i){var last=i===ITEMS.length-1;
+        out.push('<div class="row lv1">'+dot(derive(n))+'<span>'+(last?'└── ':'├── ')+esc(n.c+' '+n.t)+(n.m?' <span style="color:var(--accent)">◄ Marco '+n.m+'</span>':'')+'</span></div>');
+        (n.k||[]).forEach(function(x,j){out.push('<div class="row">'+dot(x.s)+'<span>'+(last?'    ':'│   ')+(j===n.k.length-1?'└── ':'├── ')+esc(x.c+' '+x.t)+'</span></div>');});
+      });
+      return progress()+'<div class="tree">'+out.join('')+'</div>';
+    },
+    gates:function(){
+      return R.eap()+'<div class="gate"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline"><h3>Gate '+GATE.id+' · '+esc(GATE.title)+'</h3><span class="tag t-warn">'+GATE.dec+'</span></div><div class="bar"><i style="width:'+(GATE.ok/GATE.crit*100)+'%;background:var(--accent)"></i></div><div style="font-size:13.5px">'+GATE.ok+' de '+GATE.crit+' critérios atendidos · Pendências: '+esc(GATE.pend)+'</div><div style="font-size:13px" class="muted">Ao decidir Go, a DSR pode ser ativada. Com Iterar ou Pivotar, o gate gera tarefas no GTD para as pendências.</div></div>';
+    }
+  };
+  var body=document.getElementById('demoBody');
+  var btns=document.querySelectorAll('#demo [data-lens]');
+  function show(l){
+    btns.forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.lens===l));});
+    body.innerHTML='<p class="lens-note">'+NOTE[l]+'</p>'+R[l]();
+    try{localStorage.setItem('gtdxdd-lens',l);}catch(e){}
+  }
+  btns.forEach(function(b){b.addEventListener('click',function(){show(b.dataset.lens);});});
+  var start='eap';try{var s=localStorage.getItem('gtdxdd-lens');if(s&&R[s])start=s;}catch(e){}
+  show(start);
+})();
+</script>

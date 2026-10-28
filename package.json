@@ -1,0 +1,16 @@
+{
+  "name": "gtd-framework",
+  "version": "1.0.0",
+  "description": "Sistema GTD pessoal: inbox multi-fonte, 3 lanes com WIP, tarefas do dia, revisões, API REST e servidor MCP para Claude.",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server/index.mjs",
+    "mcp": "node --disable-warning=ExperimentalWarning mcp/stdio-bridge.mjs",
+    "test": "node --disable-warning=ExperimentalWarning --test test/*.test.mjs",
+    "senha": "node --disable-warning=ExperimentalWarning scripts/definir-senha.mjs"
+  }
+}

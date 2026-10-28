@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "gtd", "runtimeExecutable": "node", "runtimeArgs": ["--disable-warning=ExperimentalWarning", "server/index.mjs"], "port": 4317 }
+  ]
+}

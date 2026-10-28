@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gtd-link/1",
+  "title": "Mensagem do contrato de ligação gtd-link/1",
+  "type": "object",
+  "required": ["contrato", "tipo", "chave", "alterado_em", "dados"],
+  "properties": {
+    "contrato": { "const": "gtd-link/1" },
+    "tipo": { "enum": ["acao.upsert", "acao.concluida", "marco.status", "bloqueio.aberto", "bloqueio.fechado", "captura.enviada"] },
+    "chave": { "type": "string" },
+    "alterado_em": { "type": "string", "format": "date-time" },
+    "ligado_a": { "type": "string", "pattern": "^dd:(eap:[a-z0-9-]{1,20}:\\d+(_\\d+)*|gate:[A-Za-z0-9-]{1,20})$" },
+    "dados": { "type": "object" }
+  },
+  "allOf": [
+    { "if": { "properties": { "tipo": { "const": "acao.upsert" } } }, "then": { "properties": {
+      "chave": { "pattern": "^dd:acao:[\\w-]{1,80}$" },
+      "dados": { "required": ["texto"], "properties": {
+        "texto": { "type": "string", "maxLength": 2000 }, "responsavel": { "type": "string" },
+        "prazo": { "type": "string", "format": "date" }, "estado": { "enum": ["aberta", "feita", "cancelada"] } } } } } },
+    { "if": { "properties": { "tipo": { "const": "acao.concluida" } } }, "then": { "properties": {
+      "chave": { "pattern": "^dd:acao:[\\w-]{1,80}$" },
+      "dados": { "required": ["concluida_em"], "properties": { "concluida_em": { "type": "string", "format": "date-time" } } } } } },
+    { "if": { "properties": { "tipo": { "const": "marco.status" } } }, "then": { "properties": {
+      "chave": { "pattern": "^dd:(eap:[a-z0-9-]{1,20}:\\d+(_\\d+)*|gate:[A-Za-z0-9-]{1,20})$" },
+      "dados": { "required": ["titulo"], "properties": {
+        "titulo": { "type": "string" }, "status": { "enum": ["pendente", "em_andamento", "concluido", "bloqueado"] },
+        "progresso": { "type": "number", "minimum": 0, "maximum": 100 }, "decisao": { "enum": ["", "go", "iterar", "pivotar", "parar"] },
+        "gate_em_foco": { "type": "string" }, "proximo_marco": { "type": "string" }, "pendencias": { "type": "string" } } } } } },
+    { "if": { "properties": { "tipo": { "const": "bloqueio.aberto" } } }, "then": { "properties": {
+      "chave": { "pattern": "^dd:bloqueio:[\\w-]{1,80}$" }, "dados": { "required": ["texto"] } } } },
+    { "if": { "properties": { "tipo": { "const": "bloqueio.fechado" } } }, "then": { "properties": {
+      "chave": { "pattern": "^dd:bloqueio:[\\w-]{1,80}$" } } } },
+    { "if": { "properties": { "tipo": { "const": "captura.enviada" } } }, "then": { "properties": {
+      "chave": { "pattern": "^gtd:item:i_[0-9a-f]{8}$" },
+      "dados": { "required": ["texto"], "properties": { "texto": { "type": "string" }, "notas": { "type": "string" }, "url": { "type": "string" } } } } } }
+  ]
+}

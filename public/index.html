@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>GTD Framework</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#FAFAF7">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<header class="app-header">
+  <h1><span class="icon">⚙</span> GTD Framework<span class="who"> — Wlad</span> <span class="conn-dot" id="connDot" title="Conexão com o servidor"></span></h1>
+  <div class="header-actions">
+    <button class="hdr-btn" data-act="quick-capture" title="Captura rápida (tecla c)">＋ Capturar</button>
+    <button class="hdr-btn green" data-act="export" title="Baixar backup JSON">💾 Backup</button>
+    <button class="hdr-btn" data-act="logout" title="Encerrar a sessão neste navegador">Sair</button>
+  </div>
+</header>
+
+<!-- Roda da Vida -->
+<section class="screen" id="screen-roda">
+  <h2 class="screen-title">Roda da Vida</h2>
+  <p style="font-size:0.85rem;color:var(--fg-secondary);margin-bottom:16px;" id="rodaSubtitle">Diagnóstico trimestral</p>
+  <div class="card" style="max-width:500px;margin:0 auto 16px;"><canvas id="rodaChart" style="width:100%;max-height:320px;"></canvas></div>
+  <div class="card"><h3 style="margin-bottom:12px;">Ajuste de notas</h3><div id="sliders"></div></div>
+  <div class="card" style="margin-top:12px;"><h3 style="margin-bottom:8px;">Desdobramento por área</h3><div id="accordion"></div></div>
+  <div style="margin-top:24px;border-top:2px solid var(--border);padding-top:20px;">
+    <h2 class="screen-title" style="margin-bottom:4px;">Matriz de Tensões</h2>
+    <p style="font-size:0.85rem;color:var(--fg-secondary);margin-bottom:16px;">28 interseções entre áreas · Clique para ajustar</p>
+    <div class="card" style="overflow-x:auto;"><div id="tensionMatrix"></div></div>
+    <div class="card" style="margin-top:12px;"><h3 style="margin-bottom:8px;">Top 5 tensões</h3><div id="topTensions"></div></div>
+  </div>
+</section>
+
+<!-- Inbox -->
+<section class="screen" id="screen-inbox">
+  <h2 class="screen-title">Inbox · Captura & Clarificação</h2>
+  <form class="inbox-input-wrap" id="captureForm">
+    <input type="text" id="captureInput" placeholder="Capturar ideia, tarefa, nota…" autocomplete="off">
+    <button type="button" class="mic-btn" data-act="mic" data-target="captureInput" aria-pressed="false" title="Ditar por voz" hidden>🎤</button>
+    <select id="captureSource" aria-label="Origem"></select>
+    <select id="captureHub" aria-label="Hub"></select>
+    <button type="submit">+</button>
+  </form>
+  <details class="card bulk" id="bulkCard">
+    <summary><span>📥 Ingestão geral</span><span class="bulk-hint">vários itens, links e textos de uma vez</span></summary>
+    <div class="bulk-body">
+      <p class="bulk-help">Cole qualquer coisa: uma linha por item, listas, links soltos, anotações. <code>#doutorado</code>, <code>#edge</code> e os outros hubs definem o hub; um título <code>## Doutorado</code> vale para os itens abaixo. Itens marcados como feitos (<code>- [x]</code>) são ignorados.</p>
+      <p class="bulk-help" id="micHelp" hidden>🎤 <b>Ditado:</b> fale um item, diga <b>“próximo item”</b> para começar outro e <b>“hashtag doutorado”</b> (ou edge, pessoal…) para escolher o hub. Clique de novo no microfone para parar.</p>
+      <p class="bulk-help" id="micFallback" hidden>🎤 Este navegador não tem ditado embutido. Use o ditado do Windows: clique no campo e aperte <b>Win + H</b>.</p>
+      <textarea id="bulkText" rows="8" placeholder="Ler artigo sobre XAI em SMA https://arxiv.org/abs/… #doutorado&#10;https://github.com/usuario/rsl-xai-mas/issues/12&#10;- Ligar para a orientadora sobre o Kappa&#10;- [ ] Revisar slides da aula de quinta #pessoal&#10;&#10;## Edge&#10;Preparar pauta da retrospectiva"></textarea>
+      <div class="bulk-opts">
+        <label class="bulk-file">📄 Carregar arquivos<input type="file" id="bulkFiles" accept=".txt,.md,.csv,.tsv,.json,text/plain,text/markdown" multiple></label>
+        <select id="bulkSource" aria-label="Origem dos itens"></select>
+        <select id="bulkHub" aria-label="Hub padrão"></select>
+        <select id="bulkMode" aria-label="Como dividir">
+          <option value="linhas">Uma linha = um item</option>
+          <option value="blocos">Blocos separados por linha em branco</option>
+        </select>
+        <label class="bulk-check"><input type="checkbox" id="bulkTitles" checked> Buscar o título dos links</label>
+      </div>
+      <div class="bulk-actions">
+        <button type="button" class="mic-btn" data-act="mic" data-target="bulkText" aria-pressed="false" title="Ditar vários itens" hidden>🎤 Ditar</button>
+        <button type="button" class="btn btn-outline btn-sm" data-act="bulk-preview">Pré-visualizar</button>
+        <button type="button" class="btn btn-sm" data-act="bulk-capture" id="bulkCaptureBtn" disabled>Capturar</button>
+        <span class="bulk-status" id="bulkStatus" role="status" aria-live="polite"></span>
+      </div>
+      <div id="bulkPreview"></div>
+    </div>
+  </details>
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-num" id="inboxCount">0</div><div class="stat-label">Na inbox</div></div>
+    <div class="stat-box"><div class="stat-num" id="processedToday">0</div><div class="stat-label">Processados hoje</div></div>
+    <div class="stat-box"><div class="stat-num" id="somedayCount">0</div><div class="stat-label">Algum Dia</div></div>
+    <div class="stat-box"><div class="stat-num" id="refCount">0</div><div class="stat-label">Referências</div></div>
+  </div>
+  <div style="display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;" id="inboxFilters">
+    <button class="inbox-filter-btn active" data-act="inbox-filter" data-filter="inbox">📥 Inbox</button>
+    <button class="inbox-filter-btn" data-act="inbox-filter" data-filter="waiting">⌛ Aguardando</button>
+    <button class="inbox-filter-btn" data-act="inbox-filter" data-filter="someday">⏳ Algum Dia</button>
+    <button class="inbox-filter-btn" data-act="inbox-filter" data-filter="reference">📁 Referência</button>
+    <button class="inbox-filter-btn" data-act="inbox-filter" data-filter="processed">✓ Processados</button>
+    <button class="inbox-filter-btn" data-act="inbox-filter" data-filter="trash">🗑 Lixo</button>
+  </div>
+  <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
+    <input type="search" id="inboxSearch" placeholder="Buscar…" style="flex:1;min-width:140px;padding:7px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--fg);">
+    <select id="inboxHubFilter" style="padding:7px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--fg);"></select>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:8px;" id="inboxSectionTitle">Itens para processar</h3>
+    <div id="inboxItems"></div>
+    <div id="inboxEmpty" style="display:none;text-align:center;padding:24px;color:var(--fg-secondary);"><div style="font-size:2rem;margin-bottom:8px;" id="inboxEmptyIcon">🎉</div><div id="inboxEmptyMsg">Inbox vazia! Tudo processado.</div></div>
+  </div>
+</section>
+
+<!-- 3 Lanes -->
+<section class="screen" id="screen-lanes">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:8px;">
+    <h2 class="screen-title" style="margin:0;">3 Lanes</h2>
+    <button class="btn btn-sm" data-act="new-project">＋ Projeto</button>
+  </div>
+  <div class="stats-row" id="laneStats"></div>
+  <div class="lanes-grid" id="lanesGrid"></div>
+</section>
+
+<!-- Projetos -->
+<section class="screen" id="screen-projetos">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:8px;">
+    <h2 class="screen-title" style="margin:0;">Projetos</h2>
+    <button class="btn btn-sm" data-act="new-project">＋ Projeto</button>
+  </div>
+  <div class="proj-tabs" id="projTabs"></div>
+  <div id="projDetail"></div>
+</section>
+
+<!-- Tarefas do Dia -->
+<section class="screen active" id="screen-tarefas">
+  <h2 class="screen-title">Tarefas do Dia</h2>
+  <p style="font-size:0.85rem;color:var(--fg-secondary);margin-bottom:12px;" id="dateLabel"></p>
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-num" id="tasksDone">0</div><div class="stat-label">Concluídas</div></div>
+    <div class="stat-box"><div class="stat-num" id="tasksTotal">0</div><div class="stat-label">Total (máx 7)</div></div>
+    <div class="stat-box"><div class="stat-num" id="tasksInbox">0</div><div class="stat-label">Na inbox</div></div>
+    <div class="stat-box"><div class="stat-num" id="tasksFocus">—</div><div class="stat-label">Energia</div></div>
+  </div>
+  <div class="card" id="alertsCard" style="margin-bottom:12px;display:none;"><h3 style="margin-bottom:6px;">⚠ Alertas</h3><div id="alertsList"></div></div>
+  <div id="dailyTasks"></div>
+  <div class="card" style="margin-top:12px;">
+    <h3 style="margin-bottom:8px;">Nova tarefa</h3>
+    <form class="inbox-input-wrap" id="taskForm" style="margin-bottom:0;">
+      <input type="text" id="taskText" placeholder="Próxima ação concreta…" autocomplete="off">
+      <select id="taskPeriod" aria-label="Período"><option value="manhã">🌅 Manhã</option><option value="tarde" selected>☀️ Tarde</option><option value="noite">🌙 Noite</option></select>
+      <select id="taskDay" aria-label="Dia"><option value="hoje">Hoje</option><option value="amanhã">Amanhã</option></select>
+      <button type="submit" class="btn btn-sm">+</button>
+    </form>
+  </div>
+  <div class="card" style="margin-top:12px;" id="tomorrowCard"><h3 style="margin-bottom:8px;">Amanhã</h3><div id="tomorrowList"></div></div>
+</section>
+
+<!-- Revisões -->
+<section class="screen" id="screen-revisoes">
+  <h2 class="screen-title">Cadências de Revisão</h2>
+  <div id="cadences"></div>
+  <div class="card" style="margin-top:24px;">
+    <h3 style="margin-bottom:6px;font-size:1rem;">📦 Backup dos Dados</h3>
+    <p style="font-size:0.78rem;color:var(--fg-secondary);margin-bottom:12px;">Os dados ficam no servidor (SQLite em <code>data/gtd.db</code>). Exporte para ter uma cópia portátil. A importação aceita backups deste servidor e o JSON do artifact original.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button data-act="export" style="flex:1;min-width:130px;padding:10px 16px;border-radius:var(--radius-sm);border:1px solid var(--success);background:var(--success-soft);color:var(--success);font-weight:600;cursor:pointer;font-size:0.85rem;">⬇ Exportar JSON</button>
+      <label style="flex:1;min-width:130px;padding:10px 16px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-text);font-weight:600;cursor:pointer;font-size:0.85rem;text-align:center;">
+        ⬆ Importar JSON <input type="file" accept=".json" id="importFile" style="display:none;">
+      </label>
+    </div>
+  </div>
+  <div class="card" style="margin-top:12px;"><h3 style="margin-bottom:6px;font-size:1rem;">🕘 Atividade recente</h3><div id="activityLog"></div></div>
+</section>
+
+<!-- Integrações -->
+<section class="screen" id="screen-integ">
+  <h2 class="screen-title">Integrações</h2>
+  <p style="font-size:0.85rem;color:var(--fg-secondary);margin-bottom:16px;">Como as fontes entram e como o Claude, o Lovable e outros apps se conectam a este GTD.</p>
+  <div id="integrations"></div>
+</section>
+
+<!-- Fluxo -->
+<section class="screen" id="screen-fluxo">
+  <h2 class="screen-title">Fluxo de Trabalho</h2>
+  <p style="font-size:0.85rem;color:var(--fg-secondary);margin-bottom:16px;">Referência visual do framework GTD personalizado</p>
+  <div class="card" style="margin-bottom:12px;">
+    <h3 style="margin-bottom:12px;font-size:1rem;">Pipeline completo</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;">
+      <div class="flow-step" style="--fc:#ea4335;">📥 Captura<small>Gmail · Keep · GitHub · Lovable · WhatsApp · Claude (MCP) · Web</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step" style="--fc:#f59e0b;">🔍 Clarificação<small>Acionável? Referência? Lixo? Feito em 2 min?</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step" style="--fc:#3b82f6;">🏗 Organização<small>3 Lanes + Modos + Lifecycle</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step" style="--fc:#8b5cf6;">🔄 Reflexão<small>Cadências: D / S / M / T</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step" style="--fc:#10b981;">⚡ Execução<small>Tarefas do dia (3 períodos, carry-over automático)</small></div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:12px;">
+    <h3 style="margin-bottom:10px;font-size:1rem;">3 Lanes (WIP Global = 7)</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;">
+      <div style="background:var(--surface-alt);border-radius:8px;padding:10px;text-align:center;"><div style="font-weight:600;color:var(--lane-sustento);">💼 Sustento</div><div style="font-size:0.8rem;color:var(--fg-secondary);">WIP 2</div><div style="font-size:0.75rem;margin-top:4px;">Emprego · Contratos<br>Renda principal</div></div>
+      <div style="background:var(--surface-alt);border-radius:8px;padding:10px;text-align:center;"><div style="font-weight:600;color:var(--lane-paralelos);">🚀 Proj. Paralelos</div><div style="font-size:0.8rem;color:var(--fg-secondary);">WIP 3</div><div style="font-size:0.75rem;margin-top:4px;">Doutorado · HQ · Curta<br>Artigos · Consultoria</div></div>
+      <div style="background:var(--surface-alt);border-radius:8px;padding:10px;text-align:center;"><div style="font-weight:600;color:var(--lane-sandbox);">🧪 Sandbox</div><div style="font-size:0.8rem;color:var(--fg-secondary);">WIP 2</div><div style="font-size:0.75rem;margin-top:4px;">Lovable · Experimentos<br>Protótipos rápidos</div></div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:12px;">
+    <h3 style="margin-bottom:10px;font-size:1rem;">Modos de Execução</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;">
+      <div style="background:var(--surface-alt);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:1.2rem;">📋</div><div style="font-weight:600;font-size:0.85rem;">Projeto</div><div style="font-size:0.75rem;color:var(--fg-secondary);">&gt;5 passos, plano, entregas</div></div>
+      <div style="background:var(--surface-alt);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:1.2rem;">🔁</div><div style="font-weight:600;font-size:0.85rem;">Kanban</div><div style="font-size:0.75rem;color:var(--fg-secondary);">Fluxo contínuo, sem fim</div></div>
+      <div style="background:var(--surface-alt);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:1.2rem;">✅</div><div style="font-weight:600;font-size:0.85rem;">To-do</div><div style="font-size:0.75rem;color:var(--fg-secondary);">&lt;5 itens, lista simples</div></div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:12px;">
+    <h3 style="margin-bottom:10px;font-size:1rem;">Ciclo de Vida do Projeto</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;">
+      <span class="badge badge-backlog">💡 Backlog</span><span style="color:var(--fg-secondary);">→</span>
+      <span class="badge badge-active">▶ Ativo</span><span style="color:var(--fg-secondary);">→</span>
+      <span class="badge badge-paused">⏸ Pausado</span><span style="color:var(--fg-secondary);">→</span>
+      <span class="badge badge-done">✓ Concluído</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:6px;">
+      <span class="badge badge-dropped">✗ Abandonado</span><span style="font-size:0.75rem;color:var(--fg-secondary);align-self:center;">← post-mortem obrigatório</span>
+    </div>
+    <p style="font-size:0.75rem;color:var(--fg-secondary);margin-top:8px;text-align:center;">⚠ Pausado &gt;60d = alerta de revisão · carry-over ≥3 dias = quebrar, delegar ou descartar</p>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:10px;font-size:1rem;">6 Hubs Claude</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:6px;" id="hubsList"></div>
+    <p style="font-size:0.75rem;color:var(--fg-secondary);margin-top:8px;">Cada projeto e item tem um hub. Em cada projeto do Claude, peça <em>"gtd_context hub=doutorado"</em> para ver só o que importa ali.</p>
+  </div>
+</section>
+
+<section class="screen" id="screen-saude"><h2 class="screen-title">Tracking Saúde</h2><div id="healthTracker"></div></section>
+<section class="screen" id="screen-meds"><h2 class="screen-title">Medicação</h2><div id="medsTracker"></div></section>
+<section class="screen" id="screen-links">
+  <h2 class="screen-title">🔗 Meus Links</h2>
+  <p style="font-size:0.82rem;color:var(--fg-secondary);margin-bottom:16px;">Hub central de links — clique para abrir, edite livremente.</p>
+  <div id="linksHub"></div>
+  <div style="margin-top:16px;"><button data-act="link-cat-add" style="padding:10px 20px;border-radius:var(--radius-sm);border:1px dashed var(--border);background:var(--surface);color:var(--fg-secondary);cursor:pointer;font-size:0.85rem;width:100%;">＋ Nova Categoria</button></div>
+</section>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" data-screen="screen-tarefas" aria-label="Tarefas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg><span>Dia</span></button>
+  <button class="tab-btn" data-screen="screen-inbox" aria-label="Inbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg><span>Inbox</span></button>
+  <button class="tab-btn" data-screen="screen-lanes" aria-label="Lanes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="6" height="18" rx="1"/><rect x="9" y="3" width="6" height="18" rx="1"/><rect x="16" y="3" width="6" height="18" rx="1"/></svg><span>Lanes</span></button>
+  <button class="tab-btn" data-screen="screen-projetos" aria-label="Projetos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><span>Projetos</span></button>
+  <button class="tab-btn" data-screen="screen-revisoes" aria-label="Revisões"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Revisões</span></button>
+  <button class="tab-btn" data-screen="screen-roda" aria-label="Roda da Vida"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg><span>Roda</span></button>
+  <button class="tab-btn" data-screen="screen-integ" aria-label="Integrações"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="4"/></svg><span>Conectar</span></button>
+  <button class="tab-btn" data-screen="screen-fluxo" aria-label="Fluxo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span>Fluxo</span></button>
+  <button class="tab-btn" data-screen="screen-saude" aria-label="Saúde"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg><span>Saúde</span></button>
+  <button class="tab-btn" data-screen="screen-meds" aria-label="Medicação"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 15h3"/></svg><span>Meds</span></button>
+  <button class="tab-btn" data-screen="screen-links" aria-label="Links"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg><span>Links</span></button>
+</nav>
+
+<div class="login" id="loginScreen" hidden>
+  <form class="login-card" id="loginForm" data-mode="login" novalidate>
+    <div class="login-brand"><span aria-hidden="true">⚙</span> GTD Framework</div>
+    <h2 id="loginTitle">Entrar</h2>
+    <p class="login-lead" id="loginLead">Acesso restrito ao dono deste GTD.</p>
+    <label class="login-field" for="loginEmail">E-mail
+      <input id="loginEmail" name="email" type="email" autocomplete="username" required></label>
+    <label class="login-field" for="loginPassword">Senha
+      <input id="loginPassword" name="password" type="password" autocomplete="current-password" required></label>
+    <label class="login-field" for="loginConfirm" id="loginConfirmWrap" hidden>Repita a senha
+      <input id="loginConfirm" name="confirm" type="password" autocomplete="new-password"></label>
+    <p class="login-error" id="loginError" role="alert" aria-live="assertive"></p>
+    <button type="submit" class="btn" id="loginBtn">Entrar</button>
+    <p class="login-foot">Esqueceu a senha? No computador onde o GTD está instalado, rode <code>npm run senha</code>.</p>
+  </form>
+</div>
+<dialog class="gtd-dialog" id="dlg"><form method="dialog" id="dlgForm"></form></dialog>
+<script src="app.js"></script>
+</body>
+</html>
