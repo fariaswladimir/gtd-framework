@@ -144,6 +144,32 @@ O Diário envia ações, status de EAP/gates e bloqueios; o GTD devolve conclus�
 - **Fontes**: veja `integrations/fontes.md` (Gmail, GitHub, Keep, WhatsApp/n8n, bookmarklet).
 - **Webhooks de saída**: na tela **Conectar**.
 
+## Publicar no seu PC com Cloudflare Tunnel (sem abrir portas)
+
+Pré-requisitos: um domínio na Cloudflare (servidores DNS apontados para ela) e o PC ligado.
+
+1. Instale o `cloudflared` (no Windows: `winget install --id Cloudflare.cloudflared`).
+2. `cloudflared tunnel login` → no navegador, escolha o domínio e clique em **Authorize**.
+3. `cloudflared tunnel create gtd`
+4. `cloudflared tunnel route dns gtd gtd.seudominio.com.br`
+5. Crie `~/.cloudflared/config.yml`:
+   ```yaml
+   tunnel: <id do túnel>
+   credentials-file: C:\Users\<você>\.cloudflared\<id do túnel>.json
+   ingress:
+     - hostname: gtd.seudominio.com.br
+       service: http://127.0.0.1:4317
+       originRequest:
+         httpHostHeader: gtd.seudominio.com.br
+     - service: http_status:404
+   ```
+6. **Iniciar com o Windows:** coloque na pasta Inicializar (`Win + R` → `shell:startup`) um atalho que rode
+   `powershell -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File <pasta>\scripts\iniciar.ps1`.
+   O script sobe o GTD e o túnel sem janelas, só se ainda não estiverem rodando, e grava logs em `data/logs/`.
+
+O servidor continua ouvindo só em `127.0.0.1`. O túnel é quem leva o tráfego até ele. Pela internet não dá para
+criar a senha (só no próprio PC), e a interface exige login. Desative a suspensão do PC para o site não sair do ar.
+
 ## Publicar (para claude.ai, Lovable, Gmail e GitHub alcançarem o servidor)
 
 Opção rápida, com o servidor rodando no seu computador (túnel HTTPS):

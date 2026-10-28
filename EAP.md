@@ -41,7 +41,7 @@ Legenda: ✅ concluído · 🔄 em andamento · ⏳ pendente
 - 5.4 Repositório git inicial (branch main, primeiro commit) ✅
 
 ## 6. Próximos passos (fora do escopo atual) ⏳
-- 6.1 Publicar com HTTPS (túnel ou Docker) para habilitar claude.ai, Lovable, Gmail e GitHub
+- 6.1 Publicar com HTTPS: Cloudflare Tunnel no PC (gtd.<domínio>), GTD e túnel iniciando com o Windows (`scripts/iniciar.ps1`) ✅ testado de fora: login exigido, criação de senha recusada pela internet
 - 6.2a MCP conectado ao Claude Code (escopo usuário, ponte stdio com partida automática) ✅
 - 6.2b Claude Desktop e instruções `gtd_context hub=…` em cada projeto do Claude ⏳
 - 6.3 Configurar as fontes (Apps Script do Gmail, webhooks do GitHub, fluxo n8n do WhatsApp)
