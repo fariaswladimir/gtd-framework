@@ -1,72 +1,77 @@
-/* Layout: bottom-tab mobile-first app with full-height screens */
+/* Layout: menu lateral no computador, barra inferior no celular; telas em coluna.
+   Cores, raios e tipografia: tokens do Atlassian Design System (@atlaskit/tokens 20.8.2, Apache-2.0),
+   temas atlassian-light e atlassian-dark. Fonte: a pilha de sistema do ADS (sem a Atlassian Sans). */
 :root {
-  --bg: #FAFAF7;
-  --fg: #1a1a1a;
-  --fg-secondary: #5a5a55;
-  --surface: #ffffff;
-  --surface-alt: #F0EFE9;
-  --border: #e0dfd8;
-  --accent: #2563eb;
-  --accent-soft: #dbeafe;
-  --accent-text: #1e40af;
-  --lane-sustento: #059669;
-  --lane-paralelos: #7c3aed;
-  --lane-sandbox: #ea580c;
-  --success: #16a34a;
-  --warning: #d97706;
-  --danger: #dc2626;
-  --danger-soft: #fee2e2;
-  --warning-soft: #fef3c7;
-  --success-soft: #dcfce7;
-  --radius: 12px;
-  --radius-sm: 8px;
-  --font-display: 'Space Grotesk', system-ui, sans-serif;
-  --font-body: 'DM Sans', system-ui, sans-serif;
+  --bg: #FFFFFF;               /* ds-surface */
+  --surface: #FFFFFF;          /* ds-surface-raised */
+  --surface-alt: #F8F8F8;      /* ds-surface-sunken */
+  --neutral: #0515240F;        /* ds-background-neutral */
+  --neutral-hover: #0B120E24;  /* ds-background-neutral-hovered */
+  --fg: #292A2E;               /* ds-text */
+  --fg-secondary: #505258;     /* ds-text-subtle */
+  --fg-subtlest: #6B6E76;      /* ds-text-subtlest */
+  --border: #0B120E24;         /* ds-border */
+  --border-input: #8C8F97;     /* ds-border-input */
+  --border-focus: #4688EC;     /* ds-border-focused */
+  --accent: #1868DB;           /* ds-background-brand-bold */
+  --accent-hover: #1558BC;     /* ds-background-brand-bold-hovered */
+  --on-accent: #FFFFFF;        /* ds-text-inverse */
+  --accent-soft: #E9F2FE;      /* ds-background-selected */
+  --accent-text: #1868DB;      /* ds-link / ds-text-selected */
+  --lane-sustento: #216E4E;    /* ds-text-accent-green */
+  --lane-paralelos: #803FA5;   /* ds-text-accent-purple */
+  --lane-sandbox: #9E4C00;     /* ds-text-accent-orange */
+  --lane-sustento-bg: #BAF3DB; /* ds-background-accent-green-subtler */
+  --lane-paralelos-bg: #EED7FC;
+  --lane-sandbox-bg: #FCE4A6;
+  --hub-bg: #CFE1FD;           /* ds-background-accent-blue-subtler */
+  --hub-fg: #1558BC;
+  --success: #4C6B1F;          /* ds-text-success */
+  --success-bold: #5B7F24;     /* ds-background-success-bold */
+  --warning: #9E4C00;          /* ds-text-warning */
+  --danger: #AE2E24;           /* ds-text-danger */
+  --danger-bold: #C9372C;      /* ds-background-danger-bold */
+  --discovery: #803FA5;        /* ds-text-discovery */
+  --discovery-soft: #F8EEFE;
+  --danger-soft: #FFECEB;
+  --warning-soft: #FFF5DB;
+  --success-soft: #EFFFD6;
+  --shadow-raised: 0px 1px 1px #1E1F2140, 0px 0px 1px #1E1F214F;
+  --shadow-overlay: 0px 8px 12px #1E1F2126, 0px 0px 1px #1E1F214F;
+  --radius: 8px;               /* ds-radius-large */
+  --radius-sm: 4px;            /* ds-radius-small */
+  --font-display: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, "Helvetica Neue", sans-serif;
+  --font-body: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, "Helvetica Neue", sans-serif;
+  --font-code: ui-monospace, Menlo, "Segoe UI Mono", "Ubuntu Mono", monospace;
+  --nav-w: 232px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #121210;
-    --fg: #e8e8e2;
-    --fg-secondary: #9a9a90;
-    --surface: #1c1c18;
-    --surface-alt: #252520;
-    --border: #333330;
-    --accent: #60a5fa;
-    --accent-soft: #1e3a5f;
-    --accent-text: #93c5fd;
-    --lane-sustento: #34d399;
-    --lane-paralelos: #a78bfa;
-    --lane-sandbox: #fb923c;
-    --success: #4ade80;
-    --warning: #fbbf24;
-    --danger: #f87171;
-    --danger-soft: #3b1515;
-    --warning-soft: #3b2e0a;
-    --success-soft: #0a3b1a;
+    --bg: #1F1F21; --surface: #242528; --surface-alt: #18191A; --neutral: #CECED912; --neutral-hover: #E3E4F21F;
+    --fg: #CECFD2; --fg-secondary: #A9ABAF; --fg-subtlest: #96999E; --border: #E3E4F21F; --border-input: #7E8188; --border-focus: #8FB8F6;
+    --accent: #669DF1; --accent-hover: #8FB8F6; --on-accent: #1F1F21; --accent-soft: #1C2B42; --accent-text: #669DF1;
+    --lane-sustento: #7EE2B8; --lane-paralelos: #D8A0F7; --lane-sandbox: #FBC828;
+    --lane-sustento-bg: #164B35; --lane-paralelos-bg: #48245D; --lane-sandbox-bg: #693200; --hub-bg: #123263; --hub-fg: #8FB8F6;
+    --success: #B3DF72; --success-bold: #94C748; --warning: #FBC828; --danger: #FD9891; --danger-bold: #F87168;
+    --discovery: #D8A0F7; --discovery-soft: #35243F; --danger-soft: #42221F; --warning-soft: #3A2C1F; --success-soft: #28311B;
+    --shadow-raised: 0px 0px 0px 1px #00000000, 0px 1px 1px #01040480, 0px 0px 1px #01040480;
+    --shadow-overlay: 0px 0px 0px 1px #BDBDBD1F, 0px 8px 12px #0104045C, 0px 0px 1px 1px #01040480;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #121210;
-  --fg: #e8e8e2;
-  --fg-secondary: #9a9a90;
-  --surface: #1c1c18;
-  --surface-alt: #252520;
-  --border: #333330;
-  --accent: #60a5fa;
-  --accent-soft: #1e3a5f;
-  --accent-text: #93c5fd;
-  --lane-sustento: #34d399;
-  --lane-paralelos: #a78bfa;
-  --lane-sandbox: #fb923c;
-  --success: #4ade80;
-  --warning: #fbbf24;
-  --danger: #f87171;
-  --danger-soft: #3b1515;
-  --warning-soft: #3b2e0a;
-  --success-soft: #0a3b1a;
+  --bg: #1F1F21; --surface: #242528; --surface-alt: #18191A; --neutral: #CECED912; --neutral-hover: #E3E4F21F;
+  --fg: #CECFD2; --fg-secondary: #A9ABAF; --fg-subtlest: #96999E; --border: #E3E4F21F; --border-input: #7E8188; --border-focus: #8FB8F6;
+  --accent: #669DF1; --accent-hover: #8FB8F6; --on-accent: #1F1F21; --accent-soft: #1C2B42; --accent-text: #669DF1;
+  --lane-sustento: #7EE2B8; --lane-paralelos: #D8A0F7; --lane-sandbox: #FBC828;
+  --lane-sustento-bg: #164B35; --lane-paralelos-bg: #48245D; --lane-sandbox-bg: #693200; --hub-bg: #123263; --hub-fg: #8FB8F6;
+  --success: #B3DF72; --success-bold: #94C748; --warning: #FBC828; --danger: #FD9891; --danger-bold: #F87168;
+  --discovery: #D8A0F7; --discovery-soft: #35243F; --danger-soft: #42221F; --warning-soft: #3A2C1F; --success-soft: #28311B;
+  --shadow-raised: 0px 0px 0px 1px #00000000, 0px 1px 1px #01040480, 0px 0px 1px #01040480;
+  --shadow-overlay: 0px 0px 0px 1px #BDBDBD1F, 0px 8px 12px #0104045C, 0px 0px 1px 1px #01040480;
   color-scheme: dark;
 }
+:root[data-theme="light"] { color-scheme: light; }
 
 body {
   background: var(--bg);

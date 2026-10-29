@@ -5,20 +5,25 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>GTD Framework</title>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#FAFAF7">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙</text></svg>">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="ads.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
 
 <header class="app-header">
-  <h1><span class="icon">⚙</span> GTD Framework<span class="who"> — Wlad</span> <span class="conn-dot" id="connDot" title="Conexão com o servidor"></span></h1>
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg></span>
+    <h1>GTD<span class="who"> Framework</span></h1>
+    <span class="conn-dot" id="connDot" title="Conexão com o servidor"></span>
+  </div>
   <div class="header-actions">
-    <button class="hdr-btn" data-act="quick-capture" title="Captura rápida (tecla c)">＋ Capturar</button>
-    <button class="hdr-btn green" data-act="export" title="Baixar backup JSON">💾 Backup</button>
+    <button class="hdr-btn icon-only" data-act="theme" id="themeBtn" title="Tema: automático" aria-label="Trocar tema (automático, claro, escuro)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v18" /><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none"/></svg></button>
+    <button class="hdr-btn" data-act="export" title="Baixar backup JSON">Backup</button>
     <button class="hdr-btn" data-act="logout" title="Encerrar a sessão neste navegador">Sair</button>
+    <button class="hdr-btn primary" data-act="quick-capture" title="Captura rápida (tecla c)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span class="lbl">Capturar</span></button>
   </div>
 </header>
 
@@ -48,14 +53,14 @@
     <button type="submit">+</button>
   </form>
   <details class="card bulk" id="bulkCard">
-    <summary><span>📥 Ingestão geral</span><span class="bulk-hint">vários itens, links e textos de uma vez</span></summary>
+    <summary><span>Ingestão geral</span><span class="bulk-hint">vários itens, links e textos de uma vez</span></summary>
     <div class="bulk-body">
       <p class="bulk-help">Cole qualquer coisa: uma linha por item, listas, links soltos, anotações. <code>#doutorado</code>, <code>#edge</code> e os outros hubs definem o hub; um título <code>## Doutorado</code> vale para os itens abaixo. Itens marcados como feitos (<code>- [x]</code>) são ignorados.</p>
       <p class="bulk-help" id="micHelp" hidden>🎤 <b>Ditado:</b> fale um item, diga <b>“próximo item”</b> para começar outro e <b>“hashtag doutorado”</b> (ou edge, pessoal…) para escolher o hub. Clique de novo no microfone para parar.</p>
       <p class="bulk-help" id="micFallback" hidden>🎤 Este navegador não tem ditado embutido. Use o ditado do Windows: clique no campo e aperte <b>Win + H</b>.</p>
       <textarea id="bulkText" rows="8" placeholder="Ler artigo sobre XAI em SMA https://arxiv.org/abs/… #doutorado&#10;https://github.com/usuario/rsl-xai-mas/issues/12&#10;- Ligar para a orientadora sobre o Kappa&#10;- [ ] Revisar slides da aula de quinta #pessoal&#10;&#10;## Edge&#10;Preparar pauta da retrospectiva"></textarea>
       <div class="bulk-opts">
-        <label class="bulk-file">📄 Carregar arquivos<input type="file" id="bulkFiles" accept=".txt,.md,.csv,.tsv,.json,text/plain,text/markdown" multiple></label>
+        <label class="bulk-file">Carregar arquivos<input type="file" id="bulkFiles" accept=".txt,.md,.csv,.tsv,.json,text/plain,text/markdown" multiple></label>
         <select id="bulkSource" aria-label="Origem dos itens"></select>
         <select id="bulkHub" aria-label="Hub padrão"></select>
         <select id="bulkMode" aria-label="Como dividir">
@@ -65,7 +70,7 @@
         <label class="bulk-check"><input type="checkbox" id="bulkTitles" checked> Buscar o título dos links</label>
       </div>
       <div class="bulk-actions">
-        <button type="button" class="mic-btn" data-act="mic" data-target="bulkText" aria-pressed="false" title="Ditar vários itens" hidden>🎤 Ditar</button>
+        <button type="button" class="mic-btn" data-act="mic" data-target="bulkText" aria-pressed="false" title="Ditar vários itens" hidden>Ditar</button>
         <button type="button" class="btn btn-outline btn-sm" data-act="bulk-preview">Pré-visualizar</button>
         <button type="button" class="btn btn-sm" data-act="bulk-capture" id="bulkCaptureBtn" disabled>Capturar</button>
         <span class="bulk-status" id="bulkStatus" role="status" aria-live="polite"></span>
@@ -80,12 +85,12 @@
     <div class="stat-box"><div class="stat-num" id="refCount">0</div><div class="stat-label">Referências</div></div>
   </div>
   <div style="display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;" id="inboxFilters">
-    <button class="inbox-filter-btn active" data-act="inbox-filter" data-filter="inbox">📥 Inbox</button>
-    <button class="inbox-filter-btn" data-act="inbox-filter" data-filter="waiting">⌛ Aguardando</button>
-    <button class="inbox-filter-btn" data-act="inbox-filter" data-filter="someday">⏳ Algum Dia</button>
-    <button class="inbox-filter-btn" data-act="inbox-filter" data-filter="reference">📁 Referência</button>
-    <button class="inbox-filter-btn" data-act="inbox-filter" data-filter="processed">✓ Processados</button>
-    <button class="inbox-filter-btn" data-act="inbox-filter" data-filter="trash">🗑 Lixo</button>
+    <button class="inbox-filter-btn active" data-act="inbox-filter" data-filter="inbox">Inbox</button>
+    <button class="inbox-filter-btn" data-act="inbox-filter" data-filter="waiting">Aguardando</button>
+    <button class="inbox-filter-btn" data-act="inbox-filter" data-filter="someday">Algum dia</button>
+    <button class="inbox-filter-btn" data-act="inbox-filter" data-filter="reference">Referência</button>
+    <button class="inbox-filter-btn" data-act="inbox-filter" data-filter="processed">Processados</button>
+    <button class="inbox-filter-btn" data-act="inbox-filter" data-filter="trash">Lixo</button>
   </div>
   <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
     <input type="search" id="inboxSearch" placeholder="Buscar…" style="flex:1;min-width:140px;padding:7px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--fg);">
@@ -128,7 +133,7 @@
     <div class="stat-box"><div class="stat-num" id="tasksInbox">0</div><div class="stat-label">Na inbox</div></div>
     <div class="stat-box"><div class="stat-num" id="tasksFocus">—</div><div class="stat-label">Energia</div></div>
   </div>
-  <div class="card" id="alertsCard" style="margin-bottom:12px;display:none;"><h3 style="margin-bottom:6px;">⚠ Alertas</h3><div id="alertsList"></div></div>
+  <div class="card" id="alertsCard" style="margin-bottom:12px;display:none;"><h3 style="margin-bottom:6px;">Alertas</h3><div id="alertsList"></div></div>
   <div id="dailyTasks"></div>
   <div class="card" style="margin-top:12px;">
     <h3 style="margin-bottom:8px;">Nova tarefa</h3>
@@ -211,7 +216,7 @@
     <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:6px;">
       <span class="badge badge-dropped">✗ Abandonado</span><span style="font-size:0.75rem;color:var(--fg-secondary);align-self:center;">← post-mortem obrigatório</span>
     </div>
-    <p style="font-size:0.75rem;color:var(--fg-secondary);margin-top:8px;text-align:center;">⚠ Pausado &gt;60d = alerta de revisão · carry-over ≥3 dias = quebrar, delegar ou descartar</p>
+    <p style="font-size:0.75rem;color:var(--fg-secondary);margin-top:8px;text-align:center;">Pausado &gt;60d = alerta de revisão · carry-over ≥3 dias = quebrar, delegar ou descartar</p>
   </div>
   <div class="card">
     <h3 style="margin-bottom:10px;font-size:1rem;">6 Hubs Claude</h3>
@@ -229,18 +234,22 @@
   <div style="margin-top:16px;"><button data-act="link-cat-add" style="padding:10px 20px;border-radius:var(--radius-sm);border:1px dashed var(--border);background:var(--surface);color:var(--fg-secondary);cursor:pointer;font-size:0.85rem;width:100%;">＋ Nova Categoria</button></div>
 </section>
 
-<nav class="tab-nav">
-  <button class="tab-btn active" data-screen="screen-tarefas" aria-label="Tarefas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg><span>Dia</span></button>
-  <button class="tab-btn" data-screen="screen-inbox" aria-label="Inbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg><span>Inbox</span></button>
-  <button class="tab-btn" data-screen="screen-lanes" aria-label="Lanes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="6" height="18" rx="1"/><rect x="9" y="3" width="6" height="18" rx="1"/><rect x="16" y="3" width="6" height="18" rx="1"/></svg><span>Lanes</span></button>
-  <button class="tab-btn" data-screen="screen-projetos" aria-label="Projetos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><span>Projetos</span></button>
-  <button class="tab-btn" data-screen="screen-revisoes" aria-label="Revisões"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Revisões</span></button>
-  <button class="tab-btn" data-screen="screen-roda" aria-label="Roda da Vida"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg><span>Roda</span></button>
-  <button class="tab-btn" data-screen="screen-integ" aria-label="Integrações"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="4"/></svg><span>Conectar</span></button>
-  <button class="tab-btn" data-screen="screen-fluxo" aria-label="Fluxo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span>Fluxo</span></button>
-  <button class="tab-btn" data-screen="screen-saude" aria-label="Saúde"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg><span>Saúde</span></button>
-  <button class="tab-btn" data-screen="screen-meds" aria-label="Medicação"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 15h3"/></svg><span>Meds</span></button>
-  <button class="tab-btn" data-screen="screen-links" aria-label="Links"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg><span>Links</span></button>
+<nav class="tab-nav" aria-label="Seções do GTD">
+  <span class="nav-section">Executar</span>
+  <button class="tab-btn active" data-screen="screen-tarefas" aria-label="Dia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></svg><span>Dia</span></button>
+  <button class="tab-btn" data-screen="screen-inbox" aria-label="Inbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/></svg><span>Inbox</span><span class="nav-count" id="navInboxCount" hidden></span></button>
+  <button class="tab-btn" data-screen="screen-lanes" aria-label="Lanes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="16" rx="1"/><rect x="17" y="4" width="4" height="16" rx="1"/></svg><span>Lanes</span></button>
+  <button class="tab-btn" data-screen="screen-projetos" aria-label="Projetos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Projetos</span></button>
+  <span class="nav-section">Refletir</span>
+  <button class="tab-btn" data-screen="screen-revisoes" aria-label="Revisões"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Revisões</span><span class="nav-count warn" id="navReviewCount" hidden></span></button>
+  <button class="tab-btn" data-screen="screen-roda" aria-label="Roda da Vida"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg><span>Roda da Vida</span></button>
+  <button class="tab-btn" data-screen="screen-fluxo" aria-label="Fluxo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 8-6-16-3 8H2"/></svg><span>Fluxo</span></button>
+  <span class="nav-section">Cuidar</span>
+  <button class="tab-btn" data-screen="screen-saude" aria-label="Saúde"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></svg><span>Saúde</span></button>
+  <button class="tab-btn" data-screen="screen-meds" aria-label="Medicação"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 15.5l7-7a3.5 3.5 0 0 0-5-5l-7 7a3.5 3.5 0 0 0 5 5z"/><path d="M7 8l5 5"/></svg><span>Medicação</span></button>
+  <button class="tab-btn" data-screen="screen-links" aria-label="Links"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg><span>Links</span></button>
+  <span class="nav-section">Configurar</span>
+  <button class="tab-btn" data-screen="screen-integ" aria-label="Conectar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2v6M15 2v6M6 8h12v3a6 6 0 0 1-12 0zM12 17v5"/></svg><span>Conectar</span></button>
 </nav>
 
 <div class="login" id="loginScreen" hidden>

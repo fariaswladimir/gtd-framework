@@ -32,6 +32,7 @@ Legenda: ✅ concluído · 🔄 em andamento · ⏳ pendente
 - 4.3 Verificação no navegador (desktop e celular 375px, sem rolagem horizontal) ✅
 - 4.4 Ditado por voz (🎤 na captura e na Ingestão geral; "próximo item" e "hashtag <hub>"; sem suporte → Win + H) ✅ testado com fala simulada; microfone real a confirmar no Chrome/Edge
 - 4.5 Tela de login: dono único por e-mail (fora do código), senha scrypt, sessão em cookie, bloqueio após 5 erros, `npm run senha`; token só para integrações ✅ 9 testes
+- 4.6 Visual do Atlassian Design System: tokens oficiais (claro e escuro), seletor de tema (automático/claro/escuro), menu lateral no computador com contadores, barra inferior no celular, ícones no lugar de emojis, Lanes e gráficos no padrão ✅ verificado no navegador (claro, escuro, 375px sem rolagem lateral); corrigido travamento ao abrir na Roda da Vida
 
 ## 5. Qualidade e entrega ✅
 - 5.1 Testes automatizados de ponta a ponta (42/42 passando: API, ingestão geral, ligação e login) ✅

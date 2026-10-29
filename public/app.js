@@ -87,6 +87,7 @@ async function act(promise, okMsg) {
 }
 
 let S = null;
+let rodaChart = null, rodaKey = ''; // usados pela navegação e pelo tema antes da seção da Roda
 function setConn(ok) {
   const d = $('connDot');
   d.className = 'conn-dot ' + (ok ? 'on' : 'off');
@@ -133,8 +134,18 @@ function dialog({ title, fields = [], submit = 'Salvar', danger = false, text })
 }
 const laneOptions = () => Object.entries(S.meta.lanes).map(([value, l]) => ({ value, label: l.name }));
 const hubOptions = (empty = '— sem hub —') => [{ value: '', label: empty }, ...Object.keys(S.meta.hubs).map(h => ({ value: h, label: h }))];
-const periodOptions = [{ value: 'manhã', label: '🌅 Manhã' }, { value: 'tarde', label: '☀️ Tarde' }, { value: 'noite', label: '🌙 Noite' }];
+const periodOptions = [{ value: 'manhã', label: 'Manhã' }, { value: 'tarde', label: 'Tarde' }, { value: 'noite', label: 'Noite' }];
 const projectOptions = (filter = () => true) => S.projects.filter(filter).map(p => ({ value: p.id, label: `${p.name} · ${p.status}` }));
+
+// ===== tema (automático, claro, escuro) =====
+const THEMES = ['auto', 'light', 'dark'];
+const THEME_LABEL = { auto: 'automático', light: 'claro', dark: 'escuro' };
+function applyTheme(t) {
+  if (t === 'auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
+  const b = $('themeBtn'); if (b) b.title = 'Tema: ' + THEME_LABEL[t];
+  const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = cssVar('--bg') || '#FFFFFF';
+}
+applyTheme(lsGet('gtd-theme') || 'auto');
 
 // ===== navegação =====
 document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => showScreen(btn.dataset.screen)));
@@ -149,6 +160,12 @@ showScreen(lsGet('gtd-tab') || 'screen-tarefas');
 
 // ===== ações delegadas (data-act) =====
 const ACTIONS = {};
+ACTIONS['theme'] = () => {
+  const cur = lsGet('gtd-theme') || 'auto', next = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length];
+  lsSet('gtd-theme', next); applyTheme(next);
+  if (rodaChart) { rodaChart.destroy(); rodaChart = null; rodaKey = ''; if (S) renderRoda(); }
+  toast('Tema: ' + THEME_LABEL[next]);
+};
 ACTIONS['logout'] = async () => {
   try { await api('/api/logout', { method: 'POST' }); } catch {}
   TOKEN = ''; S = null; showLogin({});
@@ -176,7 +193,14 @@ document.addEventListener('keydown', e => {
   }
 });
 
+function renderNavCounts() {
+  const n = S.counts.inbox, nb = $('navInboxCount');
+  nb.hidden = !n; nb.textContent = n > 99 ? '99+' : n;
+  const r = S.reviews.filter(x => x.overdue && x.freq !== 'Diária').length, rb = $('navReviewCount');
+  rb.hidden = !r; rb.textContent = r;
+}
 function renderAll() {
+  renderNavCounts();
   renderMetaSelects();
   renderInbox(); renderLanes(); renderProjects(); renderDay(); renderCadences(); renderActivity();
   renderIntegrations(); renderHubs(); renderRoda(); renderHealth(); renderMeds(); renderLinks();
@@ -418,15 +442,15 @@ function renderInbox() {
     const actions = inboxFilter === 'inbox' ? `
         <button class="btn-projeto" data-act="process" data-id="${item.id}" data-action="projeto">→ Projeto</button>
         <button class="btn-tarefa" data-act="process" data-id="${item.id}" data-action="tarefa">→ Tarefa</button>
-        <button class="btn-restore" data-act="process" data-id="${item.id}" data-action="feito" title="Resolvido em menos de 2 minutos">✓ Feito</button>
-        <button class="btn-someday" data-act="process" data-id="${item.id}" data-action="waiting" title="Delegado ou dependendo de alguém">⌛ Aguardando</button>
-        <button class="btn-someday" data-act="process" data-id="${item.id}" data-action="someday">⏳ Algum Dia</button>
-        ${item.hub === 'doutorado' || item.source === 'Diário' ? `<button class="btn-ref" data-act="process" data-id="${item.id}" data-action="diario" title="Enviar ao Diário do Doutorado como rascunho de entrada">📓 → Diário</button>` : ''}
-        <button class="btn-ref" data-act="process" data-id="${item.id}" data-action="reference">📁 Referência</button>
-        <button class="btn-trash" data-act="process" data-id="${item.id}" data-action="trash">🗑 Lixo</button>`
-      : `<button class="btn-restore" data-act="restore" data-id="${item.id}">↩ Inbox</button>
-        ${inboxFilter === 'waiting' ? `<button class="btn-tarefa" data-act="process" data-id="${item.id}" data-action="feito" title="Já recebi / foi resolvido">✓ Resolvido</button>` : ''}
-        ${inboxFilter === 'trash' ? `<button class="btn-trash" data-act="delete-item" data-id="${item.id}">✕ Apagar</button>` : `<button class="btn-trash" data-act="to-trash" data-id="${item.id}">🗑 Lixo</button>`}`;
+        <button class="btn-restore" data-act="process" data-id="${item.id}" data-action="feito" title="Resolvido em menos de 2 minutos">Feito em 2 min</button>
+        <button class="btn-someday" data-act="process" data-id="${item.id}" data-action="waiting" title="Delegado ou dependendo de alguém">Aguardando</button>
+        <button class="btn-someday" data-act="process" data-id="${item.id}" data-action="someday">Algum dia</button>
+        ${item.hub === 'doutorado' || item.source === 'Diário' ? `<button class="btn-ref" data-act="process" data-id="${item.id}" data-action="diario" title="Enviar ao Diário do Doutorado como rascunho de entrada">→ Diário</button>` : ''}
+        <button class="btn-ref" data-act="process" data-id="${item.id}" data-action="reference">Referência</button>
+        <button class="btn-trash" data-act="process" data-id="${item.id}" data-action="trash">Lixo</button>`
+      : `<button class="btn-restore" data-act="restore" data-id="${item.id}">Voltar à inbox</button>
+        ${inboxFilter === 'waiting' ? `<button class="btn-tarefa" data-act="process" data-id="${item.id}" data-action="feito" title="Já recebi / foi resolvido">Resolvido</button>` : ''}
+        ${inboxFilter === 'trash' ? `<button class="btn-trash" data-act="delete-item" data-id="${item.id}">Apagar de vez</button>` : `<button class="btn-trash" data-act="to-trash" data-id="${item.id}">Lixo</button>`}`;
     const when = inboxFilter === 'inbox' ? fmtDate(item.created_at) : fmtDate(item.processed_at);
     return `<div class="inbox-item">
       <div class="inbox-dot" style="background:${dot}"></div>
@@ -448,7 +472,13 @@ function renderInbox() {
 }
 
 // ===== LANES =====
-const priorityLabel = p => ({ 1: '🔴', 2: '🟡', 3: '🟢' })[p] || '⚪';
+const ALERT_ICON = {
+  danger: '<svg class="alert-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>',
+  warning: '<svg class="alert-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17v.5"/></svg>',
+  info: '<svg class="alert-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>',
+};
+const FOLDER_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg>';
+const priorityLabel = p => `<span class="prio prio-${[1, 2, 3].includes(+p) ? +p : 0}" aria-hidden="true"></span>`;
 const priorityText = p => ({ 1: 'Alta', 2: 'Média', 3: 'Baixa' })[p] || 'Sem';
 const laneColor = k => `var(--lane-${k})`;
 const STATUS_LABEL = { backlog: 'Backlog', ativo: 'Ativo', pausado: 'Pausado', concluido: 'Concluído', abandonado: 'Abandonado' };
@@ -484,17 +514,18 @@ function renderLanes() {
   const item = (p, wipFull) => {
     const isActive = p.status === 'ativo';
     const btn = isActive
-      ? `<button class="lane-action-btn btn-backlog" data-act="status" data-id="${p.id}" data-status="pausado" title="Pausar">⏸</button><button class="lane-action-btn btn-backlog" data-act="status" data-id="${p.id}" data-status="backlog" title="Mover para Backlog">▼ Backlog</button>`
-      : wipFull ? `<span class="lane-action-btn btn-wip-full" title="WIP cheio">🔒 WIP</span>`
-      : `<button class="lane-action-btn btn-ativar" data-act="status" data-id="${p.id}" data-status="ativo">▲ ${p.status === 'pausado' ? 'Retomar' : 'Ativar'}</button>`;
+      ? `<button class="lane-action-btn btn-backlog" data-act="status" data-id="${p.id}" data-status="pausado" title="Pausar">Pausar</button><button class="lane-action-btn btn-backlog" data-act="status" data-id="${p.id}" data-status="backlog" title="Mover para Backlog">Backlog</button>`
+      : wipFull ? `<span class="lane-action-btn btn-wip-full" title="Limite de WIP da lane atingido">WIP cheio</span>`
+      : `<button class="lane-action-btn btn-ativar" data-act="status" data-id="${p.id}" data-status="ativo">${p.status === 'pausado' ? 'Retomar' : 'Ativar'}</button>`;
     return `<div class="lane-item" style="flex-direction:column;align-items:stretch;gap:4px;${isActive ? '' : 'opacity:0.65;'}">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
-        <a href="#" class="lane-item-name" data-act="open-project" data-id="${p.id}" style="color:inherit;text-decoration:none;">${esc(p.name)}${p.status === 'pausado' ? ` <span class="badge badge-paused" style="font-size:0.6rem;">⏸ ${p.paused_days ?? 0}d</span>` : ''}</a>
-        <span style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
-          <button data-act="priority" data-id="${p.id}" style="background:none;border:none;cursor:pointer;font-size:0.8rem;padding:0;" title="Prioridade: ${priorityText(p.priority)} — clique para alterar">${priorityLabel(p.priority)}</button>
-          <span class="lane-item-mode">${esc(p.mode)}${p.github ? ' · GH' : ''}${p.lovable_url ? ' · <span style="color:#ff6b6b;">♥</span>' : ''}</span>
-          ${btn}
-        </span>
+      <div class="lane-item-top">
+        <button class="prio-btn" data-act="priority" data-id="${p.id}" title="Prioridade: ${priorityText(p.priority)} — clique para alterar" aria-label="Prioridade: ${priorityText(p.priority)}">${priorityLabel(p.priority)}</button>
+        <a href="#" class="lane-item-name" data-act="open-project" data-id="${p.id}">${esc(p.name)}</a>
+        ${p.status === 'pausado' ? `<span class="badge badge-paused">Pausado ${p.paused_days ?? 0}d</span>` : ''}
+      </div>
+      <div class="lane-item-meta">
+        <span class="lane-item-mode">${esc(p.mode)}${p.github ? ' · GH' : ''}${p.lovable_url ? ' · Lovable' : ''}</span>
+        <span class="lane-item-actions">${btn}</span>
       </div>
       ${p.next_step ? `<div style="font-size:0.72rem;color:${isActive ? 'var(--accent)' : 'var(--fg-secondary)'};padding:2px 0 0 12px;border-left:2px solid ${isActive ? 'var(--accent)' : 'var(--border)'};margin-left:2px;">▸ ${esc(p.next_step)}</div>` : ''}
       ${isActive && p.progress != null ? `<div style="display:flex;align-items:center;gap:6px;margin-top:2px;"><div style="flex:1;height:4px;background:var(--surface-alt);border-radius:2px;overflow:hidden;"><div style="height:100%;width:${p.progress}%;background:${laneColor(p.lane)};border-radius:2px;"></div></div><span style="font-size:0.65rem;color:var(--fg-secondary);">${p.progress}%</span></div>` : ''}
@@ -509,7 +540,7 @@ function renderLanes() {
     const wipFull = used >= l.wip || active.length >= S.meta.wip_global;
     const section = (label, list) => list.length ? `<div style="font-size:0.72rem;color:var(--fg-secondary);padding:6px 0 2px;text-transform:uppercase;letter-spacing:0.05em;">${label} (${list.length})</div>` + list.map(p => item(p, wipFull)).join('') : '';
     return `<div class="lane-card">
-      <div class="lane-header" style="border-bottom:3px solid ${laneColor(k)};"><h3>${esc(l.name)}</h3><span class="lane-wip" style="color:${bar}">${used}/${l.wip}</span></div>
+      <div class="lane-header"><h3><span class="lane-dot" style="background:${laneColor(k)}"></span>${esc(l.name)}</h3><span class="lane-wip" style="color:${bar}">${used}/${l.wip}</span></div>
       <div class="wip-bar"><div class="wip-fill" style="width:${pct}%;background:${bar};"></div></div>
       <div class="lane-items" style="margin-top:8px;">${act.map(p => item(p, wipFull)).join('')}${section('Pausados', paused)}${section('Backlog', backlog)}</div>
     </div>`;
@@ -553,7 +584,7 @@ ACTIONS['edit-project'] = async d => {
     { name: 'name', label: 'Nome', value: p.name, required: true },
     { name: 'lane', label: 'Lane', type: 'select', options: laneOptions(), value: p.lane },
     { name: 'hub', label: 'Hub', type: 'select', options: hubOptions(), value: p.hub || '' },
-    { name: 'priority', label: 'Prioridade', type: 'select', options: [{ value: '', label: 'Sem' }, { value: 1, label: '🔴 Alta' }, { value: 2, label: '🟡 Média' }, { value: 3, label: '🟢 Baixa' }], value: p.priority || '' },
+    { name: 'priority', label: 'Prioridade', type: 'select', options: [{ value: '', label: 'Sem' }, { value: 1, label: 'Alta' }, { value: 2, label: 'Média' }, { value: 3, label: 'Baixa' }], value: p.priority || '' },
     { name: 'progress', label: 'Progresso (%)', type: 'number', value: p.progress ?? '' },
     { name: 'github', label: 'GitHub (owner/repo)', value: p.github },
     { name: 'lovable_url', label: 'URL Lovable', value: p.lovable_url },
@@ -587,7 +618,7 @@ function diaryPanel(p) {
   return `<div class="card" style="margin-bottom:12px;">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;"><h3>📓 No Diário do Doutorado</h3><button class="mini-btn" data-act="link-add" data-id="${p.id}">＋ Ligar referência</button></div>
     <p style="font-size:0.76rem;color:var(--fg-secondary);margin-bottom:6px;">Somente leitura: quem atualiza é o Diário, a cada sincronização.</p>
-    ${blockers.map(b => `<div class="alert-row alert-danger"><span>🔴</span><span>Bloqueio: ${esc(b.texto)}</span></div>`).join('')}
+    ${blockers.map(b => `<div class="alert-row alert-danger">${ALERT_ICON.danger}<span>Bloqueio: ${esc(b.texto)}</span></div>`).join('')}
     ${links.map(row).join('') || '<p style="font-size:0.84rem;">Nenhuma referência ligada. Ligue um nó da EAP (ex.: <code>dd:eap:bib:4</code>) ou um gate (ex.: <code>dd:gate:G3</code>).</p>'}
   </div>`;
 }
@@ -705,6 +736,11 @@ $('taskForm').addEventListener('submit', async e => {
   await act(api('/api/tasks', { method: 'POST', body: { text, period: $('taskPeriod').value, date: $('taskDay').value } }));
 });
 
+const PERIOD_ICON = {
+  'manhã': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 18h18M7 14a5 5 0 0 1 10 0M12 4v3M5 9l1.5 1.5M19 9l-1.5 1.5"/></svg>',
+  'tarde': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></svg>',
+  'noite': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>',
+};
 function renderDay() {
   const d = S.today;
   $('dateLabel').textContent = new Date(d.date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -716,14 +752,14 @@ function renderDay() {
   $('tasksFocus').textContent = h < 12 ? '🌅' : h < 18 ? '☀️' : '🌙';
   const alerts = S.alerts;
   $('alertsCard').style.display = alerts.length ? 'block' : 'none';
-  $('alertsList').innerHTML = alerts.map(a => `<div class="alert-row alert-${a.level}"><span>${a.level === 'danger' ? '🔴' : a.level === 'warning' ? '🟡' : 'ℹ️'}</span><span>${esc(a.text)}</span></div>`).join('');
+  $('alertsList').innerHTML = alerts.map(a => `<div class="alert-row alert-${a.level}">${ALERT_ICON[a.level] || ALERT_ICON.info}<span>${esc(a.text)}</span></div>`).join('');
 
   const taskHTML = (t, tomorrow = false) => {
-    const carry = t.carry >= 3 ? `<div class="carry-alert">⚠ ${t.carry} dias — quebrar, delegar ou descartar</div>` : t.carry > 0 ? `<div style="font-size:0.72rem;color:var(--warning);margin-top:2px;">↻ carry-over dia ${t.carry}</div>` : '';
+    const carry = t.carry >= 3 ? `<div class="carry-alert">${t.carry} dias — quebrar, delegar ou descartar</div>` : t.carry > 0 ? `<div style="font-size:0.72rem;color:var(--warning);margin-top:2px;">↻ carry-over dia ${t.carry}</div>` : '';
     return `<div class="task-item ${t.done ? 'done' : ''}" ${tomorrow ? '' : `data-act="task-toggle" data-id="${t.id}"`}>
       ${tomorrow ? '' : '<div class="task-check"></div>'}
       <div style="flex:1;min-width:0;"><div class="task-text">${esc(t.text)}</div>
-        ${t.project_name ? `<div style="font-size:0.7rem;color:var(--fg-secondary);">📁 ${esc(t.project_name)}</div>` : ''}${carry}</div>
+        ${t.project_name ? `<div class="task-project">${FOLDER_ICON}${esc(t.project_name)}</div>` : ''}${carry}</div>
       ${t.lane ? `<span class="badge badge-${t.lane} task-lane" style="font-size:0.65rem;">${esc(t.lane.substring(0, 4))}</span>` : ''}
       <span class="task-tools">
         ${tomorrow ? `<button class="mini-btn" data-act="task-today" data-id="${t.id}" title="Trazer para hoje">↑ hoje</button>` : t.done ? '' : `<button class="mini-btn" data-act="task-tomorrow" data-id="${t.id}" title="Adiar para amanhã">→</button>`}
@@ -733,7 +769,7 @@ function renderDay() {
     </div>`;
   };
   $('dailyTasks').innerHTML = d.periods.map(per => `<div class="period-section">
-      <div class="period-label">${per.emoji} ${esc(per.label)} <span style="color:var(--fg-secondary);font-weight:400;text-transform:none;letter-spacing:0;">· ${esc(per.period)}</span></div>
+      <div class="period-label">${PERIOD_ICON[per.period] || ''} ${esc(per.period.charAt(0).toUpperCase() + per.period.slice(1))} <span class="period-sub">${esc(per.label)}</span><span class="period-count">${per.tasks.filter(t => t.done).length} de ${per.tasks.length}</span></div>
       ${per.tasks.map(t => taskHTML(t)).join('') || '<div style="font-size:0.8rem;color:var(--fg-secondary);padding:4px 0 8px;">—</div>'}
     </div>`).join('');
   $('tomorrowList').innerHTML = S.tomorrow.length ? S.tomorrow.map(t => taskHTML(t, true)).join('') : '<div style="font-size:0.82rem;color:var(--fg-secondary);">Nada planejado ainda.</div>';
@@ -878,11 +914,10 @@ function renderHubs() {
 }
 
 // ===== RODA DA VIDA =====
-let rodaChart = null, rodaKey = '';
 const miniCharts = [], openStates = [];
 const saveAreas = debounce(() => saveState('areas', S.state.areas), 500);
 const saveTensions = debounce(() => saveState('tensions', S.state.tensions), 500);
-function chartTheme() { return { fg: cssVar('--fg'), fg2: cssVar('--fg-secondary'), border: cssVar('--border') }; }
+function chartTheme() { return { fg: cssVar('--fg'), fg2: cssVar('--fg-secondary'), border: cssVar('--border'), accent: cssVar('--accent') || '#1868DB', font: cssVar('--font-body') || 'sans-serif' }; }
 
 function renderRoda() {
   const areas = S.state.areas;
@@ -896,9 +931,9 @@ function renderRoda() {
   if (!rodaChart) {
     rodaChart = new Chart($('rodaChart').getContext('2d'), {
       type: 'radar',
-      data: { labels: areas.map(a => a.name), datasets: [{ data: areas.map(a => a.score), backgroundColor: 'rgba(37, 99, 235, 0.15)', borderColor: 'rgba(37, 99, 235, 0.8)', borderWidth: 2, pointBackgroundColor: 'rgba(37, 99, 235, 1)', pointRadius: 5 }] },
+      data: { labels: areas.map(a => a.name), datasets: [{ data: areas.map(a => a.score), backgroundColor: th.accent + '26', borderColor: th.accent, borderWidth: 2, pointBackgroundColor: th.accent, pointRadius: 5 }] },
       options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } },
-        scales: { r: { min: 0, max: 10, ticks: { stepSize: 2, backdropColor: 'transparent', color: th.fg2 }, grid: { color: th.border }, pointLabels: { font: { family: "'DM Sans', sans-serif", size: 11 }, color: th.fg } } } },
+        scales: { r: { min: 0, max: 10, ticks: { stepSize: 2, backdropColor: 'transparent', color: th.fg2 }, grid: { color: th.border }, pointLabels: { font: { family: th.font, size: 12 }, color: th.fg } } } },
     });
   } else { rodaChart.data.labels = areas.map(a => a.name); rodaChart.data.datasets[0].data = areas.map(a => a.score); rodaChart.update('none'); }
 
@@ -971,12 +1006,12 @@ function syncArea(i, rerender = false) {
 }
 function miniRoda(i) {
   const a = S.state.areas[i], th = chartTheme();
-  const c = ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#6366f1'][i % 8];
+  const c = ['#1868DB', '#22A06B', '#E06C00', '#964AC0', '#C9372C', '#2898BD', '#CD519D', '#5B7F24'][i % 8];
   return new Chart($(`miniRoda-${i}`).getContext('2d'), {
     type: 'radar',
     data: { labels: a.subs.map(s => s.label.length > 12 ? s.label.slice(0, 12) + '…' : s.label), datasets: [{ data: a.subs.map(s => s.score), backgroundColor: c + '22', borderColor: c, borderWidth: 2, pointBackgroundColor: c, pointRadius: 3 }] },
     options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } },
-      scales: { r: { min: 0, max: 10, ticks: { display: false }, grid: { color: th.border }, pointLabels: { font: { family: "'DM Sans', sans-serif", size: 9 }, color: th.fg2 } } } },
+      scales: { r: { min: 0, max: 10, ticks: { display: false }, grid: { color: th.border }, pointLabels: { font: { family: th.font, size: 10 }, color: th.fg2 } } } },
   });
 }
 function tensionValues() {
